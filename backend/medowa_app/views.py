@@ -1,12 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import cache_control, never_cache
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from .forms import LoginForm, RegisterForm
 from .models import Banner, Category, Product
@@ -121,3 +123,71 @@ def profile_user(request):
         'next': reverse('profile'),
     }
     return render(request, 'profile.html', context)
+
+
+def serialize_product(product):
+    return {
+        'id': product.pk,
+        'name': product.name,
+        'description': product.description,
+        'price': str(product.price),
+        'image': product.image,
+        'category': {
+            'id': product.category.pk,
+            'name': product.category.name,
+            'slug': product.category.slug,
+        },
+        'url': product.get_absolute_url(),
+    }
+
+
+def serialize_category(category):
+    return {
+        'id': category.pk,
+        'name': category.name,
+        'slug': category.slug,
+        'url': category.get_absolute_url(),
+        'product_count': category.product_count,
+    }
+
+
+def serialize_banner(banner):
+    return {
+        'id': banner.pk,
+        'title': banner.title,
+        'subtitle': banner.subtitle,
+        'image': banner.image,
+        'link_url': banner.link_url,
+    }
+
+
+@require_GET
+def api_products(request):
+    products = Product.objects.filter(is_active=True).select_related('category')
+    category_slug = request.GET.get('category', '')
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+    payload = [serialize_product(product) for product in products]
+    return JsonResponse({'count': len(payload), 'results': payload})
+
+
+@require_GET
+def api_categories(request):
+    categories = Category.objects.annotate(
+        product_count=Count('products', filter=Q(products__is_active=True))
+    )
+    payload = [serialize_category(category) for category in categories]
+    return JsonResponse({'count': len(payload), 'results': payload})
+
+
+@require_GET
+def api_banners(request):
+    banners = Banner.objects.filter(is_active=True)
+    payload = [serialize_banner(banner) for banner in banners]
+    return JsonResponse({'count': len(payload), 'results': payload})
+
+
+@require_GET
+def api_product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    return JsonResponse(serialize_product(product))

@@ -279,3 +279,51 @@ class CredentialVerificationTests(TestCase):
 
     def test_verify_accounts_command_passes(self):
         call_command('verify_accounts')
+
+
+class ApiEndpointTests(StoreFixturesMixin, TestCase):
+
+    def test_products_endpoint_returns_active_products(self):
+        response = self.client.get(reverse('api_products'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['count'], 2)
+        names = {item['name'] for item in data['results']}
+        self.assertEqual(names, {'MacBook Air 13-inch M4', 'iPhone 18 Pro'})
+
+    def test_products_endpoint_filters_by_category(self):
+        response = self.client.get(reverse('api_products'), {'category': 'mac'})
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['name'], 'MacBook Air 13-inch M4')
+        self.assertEqual(data['results'][0]['category']['slug'], 'mac')
+
+    def test_product_detail_endpoint_returns_payload(self):
+        response = self.client.get(reverse('api_product_detail', args=[self.macbook.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['id'], self.macbook.pk)
+
+    def test_categories_endpoint_reports_active_product_counts(self):
+        response = self.client.get(reverse('api_categories'))
+        data = response.json()
+        self.assertEqual(data['count'], 2)
+        by_slug = {item['slug']: item for item in data['results']}
+        self.assertEqual(by_slug['mac']['product_count'], 1)
+        self.assertEqual(by_slug['iphone']['product_count'], 1)
+
+    def test_banners_endpoint_returns_only_active_banners(self):
+        response = self.client.get(reverse('api_banners'))
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['title'], 'iPhone 18 Pro')
+
+    def test_api_allows_cross_origin_requests(self):
+        response = self.client.get(reverse('api_products'), HTTP_ORIGIN='https://core-store.vercel.app')
+        self.assertEqual(response['Access-Control-Allow-Origin'], '*')
+
+    def test_api_routes_resolve(self):
+        self.assertEqual(reverse('api_products'), '/api/products/')
+        self.assertEqual(reverse('api_product_detail', args=[1]), '/api/products/1/')
+        self.assertEqual(reverse('api_categories'), '/api/categories/')
+        self.assertEqual(reverse('api_banners'), '/api/banners/')
