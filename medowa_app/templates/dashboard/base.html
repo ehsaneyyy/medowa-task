@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1d1d1f">
+  <title>{% block title %}Dashboard — medowa-task{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            page: '#f5f5f7',
+            ink: '#1d1d1f',
+            subtle: '#6e6e73',
+            hair: '#d2d2d7',
+            brand: '#0071e3'
+          },
+          fontFamily: {
+            display: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .dashLink { @apply flex shrink-0 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium text-subtle transition duration-200 hover:bg-white hover:text-ink; }
+      .dashLinkOn { @apply bg-white text-ink shadow-[0_1px_2px_rgba(0,0,0,0.06)]; }
+      .dashPanel { @apply rounded-2xl border border-black/[0.06] bg-white; }
+      .dashLabel { @apply mb-1.5 block text-[12.5px] font-medium text-ink; }
+      .dashInput { @apply w-full rounded-xl border border-hair bg-white px-4 py-2.5 text-[14px] text-ink placeholder-[#86868b] outline-none transition duration-200 focus:border-brand focus:ring-2 focus:ring-brand/15; }
+      .dashCheck { @apply h-4 w-4 rounded border-hair text-brand focus:ring-brand/30; }
+      .dashBtn { @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-[14px] font-medium text-white transition duration-200 hover:bg-[#0077ed] active:scale-[0.99]; }
+      .dashBtnGhost { @apply inline-flex items-center justify-center gap-2 rounded-full border border-hair bg-white px-5 py-2.5 text-[14px] font-medium text-ink transition duration-200 hover:border-ink/40; }
+      .dashBtnDanger { @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#f0b4b8] bg-white px-4 py-2 text-[13px] font-medium text-[#c7262c] transition duration-200 hover:bg-[#fff5f5]; }
+      .dashTh { @apply px-4 py-3 text-left text-[10.5px] font-semibold uppercase tracking-[0.09em] text-subtle; }
+      .dashTd { @apply px-4 py-3.5 align-middle text-[13.5px] text-ink; }
+      .dashChip { @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold; }
+      .dashError { @apply mt-1.5 text-[12.5px] text-[#c7262c]; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-page font-display text-ink">
+  <header class="sticky top-0 z-40 bg-ink text-white">
+    <div class="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6">
+      <a href="{% url 'dashboard_home' %}" class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[16px] font-semibold text-ink">m</span>
+        <span class="leading-tight">
+          <span class="block text-[14px] font-semibold">medowa-task</span>
+          <span class="block text-[11px] text-white/60">Store dashboard</span>
+        </span>
+      </a>
+      <div class="flex items-center gap-1.5">
+        <a href="{% url 'index' %}" class="rounded-full px-3.5 py-1.5 text-[12.5px] text-white/80 transition duration-200 hover:bg-white/10 hover:text-white">View store</a>
+        <span class="hidden rounded-full bg-white/10 px-3.5 py-1.5 text-[12.5px] text-white/85 sm:inline-flex">{{ request.user.username }}</span>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="rounded-full px-3.5 py-1.5 text-[12.5px] text-white/80 transition duration-200 hover:bg-white/10 hover:text-white">Logout</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <div class="mx-auto grid w-full max-w-[1200px] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[228px_1fr]">
+    <aside class="lg:sticky lg:top-[84px] lg:self-start">
+      <nav class="scrollbar-none -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
+        <a href="{% url 'dashboard_home' %}" class="dashLink {% if dash_section == 'home' %}dashLinkOn{% endif %}">Overview</a>
+        <a href="{% url 'dashboard_products' %}" class="dashLink {% if dash_section == 'products' %}dashLinkOn{% endif %}">Products</a>
+        <a href="{% url 'dashboard_categories' %}" class="dashLink {% if dash_section == 'categories' %}dashLinkOn{% endif %}">Categories</a>
+        <a href="{% url 'dashboard_banners' %}" class="dashLink {% if dash_section == 'banners' %}dashLinkOn{% endif %}">Banners</a>
+        <a href="{% url 'dashboard_orders' %}" class="dashLink {% if dash_section == 'orders' %}dashLinkOn{% endif %}">Orders</a>
+        <a href="{% url 'dashboard_users' %}" class="dashLink {% if dash_section == 'users' %}dashLinkOn{% endif %}">Users</a>
+      </nav>
+    </aside>
+
+    <main class="min-w-0">
+      {% if messages %}
+        <div class="mb-5 space-y-2">
+          {% for message in messages %}
+            <div class="riseIn rounded-xl border bg-white px-4 py-3 text-[13.5px] {% if message.tags == 'success' %}border-[#b6e2c8] text-[#1d7a45]{% elif message.tags == 'error' %}border-[#f0b4b8] text-[#c7262c]{% elif message.tags == 'warning' %}border-[#f3d9a4] text-[#8a5a00]{% else %}border-black/[0.08] text-ink{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

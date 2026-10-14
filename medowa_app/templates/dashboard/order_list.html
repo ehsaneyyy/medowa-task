@@ -1,0 +1,64 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block title %}Orders — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div>
+  <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Orders</h1>
+  <p class="mt-1 text-[14px] text-subtle">{{ orders|length }} order{{ orders|length|pluralize }} placed across the store.</p>
+</div>
+
+<div class="mt-5 flex flex-wrap gap-2">
+  <a href="{% url 'dashboard_orders' %}" class="dashChip border {% if not active_status %}bg-ink text-white border-ink{% else %}bg-white text-subtle border-hair{% endif %} px-3.5 py-2">All</a>
+  {% for value, label in statuses %}
+    <a href="?status={{ value }}" class="dashChip border {% if active_status == value %}bg-ink text-white border-ink{% else %}bg-white text-subtle border-hair{% endif %} px-3.5 py-2">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<div class="dashPanel mt-5 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[720px] border-collapse">
+      <thead class="border-b border-black/[0.06] bg-page/60">
+        <tr>
+          <th class="dashTh">Reference</th>
+          <th class="dashTh">Customer</th>
+          <th class="dashTh">Items</th>
+          <th class="dashTh">Total</th>
+          <th class="dashTh">Status</th>
+          <th class="dashTh">Placed</th>
+          <th class="dashTh text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-black/[0.06]">
+        {% for order in orders %}
+          <tr class="transition hover:bg-page">
+            <td class="dashTd font-semibold">{{ order.reference }}</td>
+            <td class="dashTd">
+              <span class="block font-medium">{{ order.full_name }}</span>
+              <span class="text-[12px] text-subtle">{{ order.user.username }}</span>
+            </td>
+            <td class="dashTd">{{ order.item_count }}</td>
+            <td class="dashTd font-semibold">₹{{ order.total|floatformat:0|intcomma }}</td>
+            <td class="dashTd">
+              <span class="dashChip
+                {% if order.status == 'delivered' %}bg-[#f2fbf5] text-[#1d7a45]
+                {% elif order.status == 'shipped' %}bg-[#fff8ec] text-[#8a5a00]
+                {% elif order.status == 'cancelled' %}bg-[#fff5f5] text-[#c7262c]
+                {% else %}bg-[#eef4ff] text-[#0066cc]{% endif %}">{{ order.get_status_display }}</span>
+            </td>
+            <td class="dashTd text-subtle">{{ order.created_at|date:"d M Y" }}</td>
+            <td class="dashTd">
+              <div class="flex justify-end">
+                <a href="{% url 'dashboard_order_detail' order.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Open</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="px-4 py-14 text-center text-[13.5px] text-subtle">No orders in this view yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

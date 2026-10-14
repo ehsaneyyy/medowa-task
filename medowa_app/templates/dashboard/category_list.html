@@ -1,0 +1,48 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Categories — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Categories</h1>
+    <p class="mt-1 text-[14px] text-subtle">{{ categories|length }} collection{{ categories|length|pluralize }} grouping the catalogue.</p>
+  </div>
+  <a href="{% url 'dashboard_category_create' %}" class="dashBtn">New category</a>
+</div>
+
+<div class="dashPanel mt-5 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[560px] border-collapse">
+      <thead class="border-b border-black/[0.06] bg-page/60">
+        <tr>
+          <th class="dashTh">Name</th>
+          <th class="dashTh">Slug</th>
+          <th class="dashTh">Products</th>
+          <th class="dashTh text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-black/[0.06]">
+        {% for category in categories %}
+          <tr class="transition hover:bg-page">
+            <td class="dashTd font-medium">{{ category.name }}</td>
+            <td class="dashTd"><code class="rounded bg-page px-2 py-1 text-[12px] text-subtle">{{ category.slug }}</code></td>
+            <td class="dashTd">{{ category.product_total }}</td>
+            <td class="dashTd">
+              <div class="flex items-center justify-end gap-2">
+                <a href="{% url 'dashboard_category_edit' category.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
+                <form method="post" action="{% url 'dashboard_category_delete' category.pk %}" onsubmit="return confirm('Delete &quot;{{ category.name|escapejs }}&quot; and all {{ category.product_total }} of its products?');">
+                  {% csrf_token %}
+                  <button type="submit" class="dashBtnDanger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="px-4 py-14 text-center text-[13.5px] text-subtle">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }} — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">{{ title }}</h1>
+    <p class="mt-1 text-[14px] text-subtle">Categories group products across the storefront.</p>
+  </div>
+  <a href="{% url 'dashboard_categories' %}" class="dashBtnGhost">Back</a>
+</div>
+
+<form method="post" class="mx-auto mt-5 w-full max-w-xl">
+  {% csrf_token %}
+  <div class="dashPanel flex flex-col gap-5 p-6">
+    <div>
+      <label class="dashLabel" for="{{ form.name.id_for_label }}">Name</label>
+      {{ form.name }}{{ form.name.errors }}
+    </div>
+    <div>
+      <label class="dashLabel" for="{{ form.slug.id_for_label }}">Slug</label>
+      {{ form.slug }}{{ form.slug.errors }}
+      <p class="mt-1.5 text-[12px] text-subtle">Used in URLs such as <code>/?category={{ form.slug.value|default:"slug" }}</code>.</p>
+    </div>
+  </div>
+  <div class="mt-5 flex flex-wrap gap-3">
+    <button type="submit" class="dashBtn">{% if mode == 'edit' %}Save changes{% else %}Create category{% endif %}</button>
+    <a href="{% url 'dashboard_categories' %}" class="dashBtnGhost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

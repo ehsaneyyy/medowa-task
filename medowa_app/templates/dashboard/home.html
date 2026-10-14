@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block title %}Overview — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Overview</h1>
+    <p class="mt-1 text-[14px] text-subtle">Everything running on medowa-task at a glance.</p>
+  </div>
+  <div class="flex flex-wrap gap-2.5">
+    <a href="{% url 'dashboard_product_create' %}" class="dashBtn">New product</a>
+    <a href="{% url 'dashboard_banner_create' %}" class="dashBtnGhost">New banner</a>
+  </div>
+</div>
+
+<div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {% for stat in stats %}
+    <a href="{% url stat.url %}" class="dashPanel cardLift p-5">
+      <p class="text-[11px] uppercase tracking-[0.14em] text-subtle">{{ stat.label }}</p>
+      <p class="mt-2 text-[26px] font-semibold tracking-tight text-ink">{{ stat.value }}</p>
+      <p class="mt-1 text-[12.5px] text-subtle">{{ stat.sub }}</p>
+    </a>
+  {% endfor %}
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+  <div class="dashPanel overflow-hidden">
+    <div class="flex items-center justify-between border-b border-black/[0.06] px-5 py-4">
+      <h2 class="text-[16px] font-semibold text-ink">Recent orders</h2>
+      <a href="{% url 'dashboard_orders' %}" class="text-[13px] text-brand hover:underline">View all</a>
+    </div>
+    {% if recent_orders %}
+      <div class="divide-y divide-black/[0.06]">
+        {% for order in recent_orders %}
+          <a href="{% url 'dashboard_order_detail' order.pk %}" class="flex items-center justify-between gap-4 px-5 py-3.5 transition hover:bg-page">
+            <div class="min-w-0">
+              <p class="truncate text-[13.5px] font-semibold text-ink">{{ order.reference }} &middot; {{ order.full_name }}</p>
+              <p class="text-[12px] text-subtle">{{ order.created_at|date:"d M Y, H:i" }} &middot; {{ order.item_count }} item{{ order.item_count|pluralize }}</p>
+            </div>
+            <div class="flex shrink-0 items-center gap-3">
+              <span class="dashChip
+                {% if order.status == 'delivered' %}bg-[#f2fbf5] text-[#1d7a45]
+                {% elif order.status == 'shipped' %}bg-[#fff8ec] text-[#8a5a00]
+                {% elif order.status == 'cancelled' %}bg-[#fff5f5] text-[#c7262c]
+                {% else %}bg-[#eef4ff] text-[#0066cc]{% endif %}">{{ order.get_status_display }}</span>
+              <span class="text-[13.5px] font-semibold text-ink">₹{{ order.total|floatformat:0|intcomma }}</span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="px-5 py-10 text-center text-[13.5px] text-subtle">No orders yet. They will appear here as customers check out.</p>
+    {% endif %}
+  </div>
+
+  <div class="dashPanel overflow-hidden">
+    <div class="flex items-center justify-between border-b border-black/[0.06] px-5 py-4">
+      <h2 class="text-[16px] font-semibold text-ink">Latest products</h2>
+      <a href="{% url 'dashboard_products' %}" class="text-[13px] text-brand hover:underline">Manage</a>
+    </div>
+    <div class="divide-y divide-black/[0.06]">
+      {% for product in recent_products %}
+        <a href="{% url 'dashboard_product_edit' product.pk %}" class="flex items-center gap-3.5 px-5 py-3 transition hover:bg-page">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-page p-1.5">
+            {% if product.image_url %}<img src="{{ product.image_url }}" alt="" class="h-full w-full object-contain">{% endif %}
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate text-[13.5px] font-medium text-ink">{{ product.name }}</span>
+            <span class="block text-[12px] text-subtle">{{ product.category.name }}</span>
+          </span>
+          <span class="shrink-0 text-[13px] font-semibold text-ink">₹{{ product.price|floatformat:0|intcomma }}</span>
+        </a>
+      {% empty %}
+        <p class="px-5 py-10 text-center text-[13.5px] text-subtle">No products yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

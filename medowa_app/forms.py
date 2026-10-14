@@ -2,6 +2,11 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
+from .models import Banner, Category, Product
+
+INPUT = 'dashInput'
+CHECK = 'dashCheck'
+
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
@@ -60,3 +65,50 @@ class CheckoutForm(forms.Form):
         max_length=20,
         widget=forms.TextInput(attrs={'placeholder': 'Postal code', 'autocomplete': 'postal-code'}),
     )
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'category', 'price', 'description', 'image', 'image_file', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'e.g. iPhone 16 Pro'}),
+            'category': forms.Select(attrs={'class': INPUT}),
+            'price': forms.NumberInput(attrs={'class': INPUT, 'step': '0.01', 'placeholder': '0.00'}),
+            'description': forms.Textarea(attrs={'class': INPUT, 'rows': 5, 'placeholder': 'Describe the product'}),
+            'image': forms.URLInput(attrs={'class': INPUT, 'placeholder': 'https://example.com/image.jpg'}),
+            'image_file': forms.ClearableFileInput(attrs={'class': INPUT}),
+            'is_active': forms.CheckboxInput(attrs={'class': CHECK}),
+        }
+        labels = {
+            'image': 'Image URL (optional)',
+            'image_file': 'Upload image (optional)',
+            'is_active': 'Visible on the storefront',
+        }
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'slug']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'e.g. iPad'}),
+            'slug': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'e.g. ipad'}),
+        }
+        help_texts = {
+            'slug': 'Lowercase identifier used in the storefront filter links.',
+        }
+
+
+class BannerForm(forms.ModelForm):
+    class Meta:
+        model = Banner
+        fields = ['title', 'subtitle', 'link_url', 'image', 'image_file', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'Banner headline'}),
+            'subtitle': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'Supporting line'}),
+            'link_url': forms.TextInput(attrs={'class': INPUT, 'placeholder': '/ or /?category=mac'}),
+            'image': forms.URLInput(attrs={'class': INPUT, 'placeholder': 'https://...'}),
+            'image_file': forms.ClearableFileInput(attrs={'class': INPUT}),
+            'is_active': forms.CheckboxInput(attrs={'class': CHECK}),
+        }

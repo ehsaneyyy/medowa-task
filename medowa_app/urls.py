@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import dashboard_views, views
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -19,4 +19,24 @@ urlpatterns = [
     path('api/products/<int:pk>/', views.api_product_detail, name='api_product_detail'),
     path('api/categories/', views.api_categories, name='api_categories'),
     path('api/banners/', views.api_banners, name='api_banners'),
+
+    path('dashboard/', dashboard_views.home, name='dashboard_home'),
+    path('dashboard/products/', dashboard_views.product_list, name='dashboard_products'),
+    path('dashboard/products/new/', dashboard_views.product_create, name='dashboard_product_create'),
+    path('dashboard/products/<int:pk>/edit/', dashboard_views.product_edit, name='dashboard_product_edit'),
+    path('dashboard/products/<int:pk>/delete/', dashboard_views.product_delete, name='dashboard_product_delete'),
+    path('dashboard/products/<int:pk>/toggle/', dashboard_views.product_toggle, name='dashboard_product_toggle'),
+    path('dashboard/categories/', dashboard_views.category_list, name='dashboard_categories'),
+    path('dashboard/categories/new/', dashboard_views.category_create, name='dashboard_category_create'),
+    path('dashboard/categories/<int:pk>/edit/', dashboard_views.category_edit, name='dashboard_category_edit'),
+    path('dashboard/categories/<int:pk>/delete/', dashboard_views.category_delete, name='dashboard_category_delete'),
+    path('dashboard/banners/', dashboard_views.banner_list, name='dashboard_banners'),
+    path('dashboard/banners/new/', dashboard_views.banner_create, name='dashboard_banner_create'),
+    path('dashboard/banners/<int:pk>/edit/', dashboard_views.banner_edit, name='dashboard_banner_edit'),
+    path('dashboard/banners/<int:pk>/delete/', dashboard_views.banner_delete, name='dashboard_banner_delete'),
+    path('dashboard/banners/<int:pk>/toggle/', dashboard_views.banner_toggle, name='dashboard_banner_toggle'),
+    path('dashboard/orders/', dashboard_views.order_list, name='dashboard_orders'),
+    path('dashboard/orders/<int:pk>/', dashboard_views.order_detail, name='dashboard_order_detail'),
+    path('dashboard/orders/<int:pk>/status/', dashboard_views.order_update_status, name='dashboard_order_status'),
+    path('dashboard/users/', dashboard_views.user_list, name='dashboard_users'),
 ]

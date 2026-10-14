@@ -11,7 +11,14 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.http import require_GET, require_POST
 
-from .cart import add_to_cart as cart_add, clear_cart, get_cart_items, get_cart_total, set_quantity
+from .cart import (
+    add_to_cart as cart_add,
+    clear_cart,
+    get_cart_count,
+    get_cart_items,
+    get_cart_total,
+    set_quantity,
+)
 from .forms import CheckoutForm, LoginForm, RegisterForm
 from .models import Banner, Category, Order, OrderItem, Product
 
@@ -205,9 +212,37 @@ def _safe_redirect(request, fallback):
     return redirect(fallback)
 
 
+def _is_ajax(request):
+    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+
+def _cart_state(request):
+    items = get_cart_items(request)
+    total = get_cart_total(request)
+    return {
+        'count': get_cart_count(request),
+        'total': float(total),
+        'total_display': '\u20b9%s' % format(total, ',.0f'),
+        'items': {
+            str(item['product'].pk): {
+                'quantity': item['quantity'],
+                'line_total': float(item['line_total']),
+                'line_total_display': '\u20b9%s' % format(item['line_total'], ',.0f'),
+            }
+            for item in items
+        },
+    }
+
+
 @require_POST
 def add_to_cart(request, pk):
     product = get_object_or_404(Product, pk=pk, is_active=True)
+    if not request.user.is_authenticated:
+        messages.info(request, 'Please sign in to add items to your bag.')
+        return redirect('/login/?next=%s' % product.get_absolute_url())
+    if request.user.is_staff:
+        messages.error(request, 'You are in an admin account. Purchasing is disabled for administrators.')
+        return redirect('product_detail', pk=product.pk)
     try:
         quantity = int(request.POST.get('quantity', 1))
     except (TypeError, ValueError):
@@ -230,13 +265,21 @@ def cart_detail(request):
 
 @require_POST
 def update_cart_item(request, pk):
+    if request.user.is_staff:
+        if _is_ajax(request):
+            return JsonResponse({'error': 'Purchasing is disabled for administrator accounts.'}, status=403)
+        return redirect('cart')
     set_quantity(request, pk, request.POST.get('quantity', 1))
+    if _is_ajax(request):
+        return JsonResponse(_cart_state(request))
     return redirect('cart')
 
 
 @require_POST
 def remove_cart_item(request, pk):
     set_quantity(request, pk, 0)
+    if _is_ajax(request):
+        return JsonResponse(_cart_state(request))
     messages.info(request, 'Item removed from your bag.')
     return redirect('cart')
 
@@ -244,6 +287,9 @@ def remove_cart_item(request, pk):
 @login_required
 @never_cache
 def checkout(request):
+    if request.user.is_staff:
+        messages.error(request, 'You are in an admin account. Checkout is disabled for administrators.')
+        return redirect('index')
     items = get_cart_items(request)
     if not items:
         messages.info(request, 'Your bag is empty. Add a product before checking out.')

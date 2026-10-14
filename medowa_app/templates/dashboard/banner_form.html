@@ -1,0 +1,65 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }} — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">{{ title }}</h1>
+    <p class="mt-1 text-[14px] text-subtle">Banners power the homepage hero and promotional tiles.</p>
+  </div>
+  <a href="{% url 'dashboard_banners' %}" class="dashBtnGhost">Back</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="mt-5 grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+  {% csrf_token %}
+  <div class="dashPanel flex flex-col gap-5 p-6">
+    <div>
+      <label class="dashLabel" for="{{ form.title.id_for_label }}">Title</label>
+      {{ form.title }}{{ form.title.errors }}
+    </div>
+    <div>
+      <label class="dashLabel" for="{{ form.subtitle.id_for_label }}">Subtitle</label>
+      {{ form.subtitle }}{{ form.subtitle.errors }}
+    </div>
+    <div>
+      <label class="dashLabel" for="{{ form.link_url.id_for_label }}">Link URL</label>
+      {{ form.link_url }}{{ form.link_url.errors }}
+    </div>
+    <div class="border-t border-black/[0.06] pt-5">
+      <h2 class="text-[15px] font-semibold text-ink">Banner image</h2>
+      <div class="mt-4 grid gap-5 sm:grid-cols-2">
+        <div>
+          <label class="dashLabel" for="{{ form.image_file.id_for_label }}">Upload image</label>
+          {{ form.image_file }}{{ form.image_file.errors }}
+        </div>
+        <div>
+          <label class="dashLabel" for="{{ form.image.id_for_label }}">External image URL</label>
+          {{ form.image }}{{ form.image.errors }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="flex flex-col gap-4">
+    <div class="dashPanel p-5">
+      <h2 class="text-[15px] font-semibold text-ink">Visibility</h2>
+      <label class="mt-3 flex items-center gap-3">
+        {{ form.is_active }}
+        <span class="text-[13.5px] text-ink">Show this banner on the homepage</span>
+      </label>
+    </div>
+    {% if banner.image_url %}
+      <div class="dashPanel overflow-hidden">
+        <div class="flex aspect-[16/7] w-full items-center justify-center bg-page">
+          <img src="{{ banner.image_url }}" alt="" class="h-full w-full object-cover">
+        </div>
+      </div>
+    {% endif %}
+    <div class="dashPanel flex flex-col gap-3 p-5">
+      <button type="submit" class="dashBtn w-full">{% if mode == 'edit' %}Save changes{% else %}Create banner{% endif %}</button>
+      <a href="{% url 'dashboard_banners' %}" class="dashBtnGhost w-full">Cancel</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

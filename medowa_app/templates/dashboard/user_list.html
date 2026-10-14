@@ -1,0 +1,50 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Users — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div>
+  <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Users</h1>
+  <p class="mt-1 text-[14px] text-subtle">{{ accounts|length }} account{{ accounts|length|pluralize }} registered on medowa-task.</p>
+</div>
+
+<div class="dashPanel mt-5 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[720px] border-collapse">
+      <thead class="border-b border-black/[0.06] bg-page/60">
+        <tr>
+          <th class="dashTh">User</th>
+          <th class="dashTh">Email</th>
+          <th class="dashTh">Role</th>
+          <th class="dashTh">Orders</th>
+          <th class="dashTh">Joined</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-black/[0.06]">
+        {% for account in accounts %}
+          <tr class="transition hover:bg-page">
+            <td class="dashTd">
+              <div class="flex items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-[12px] font-semibold text-white">{{ account.username|slice:":2"|upper }}</span>
+                <span class="font-medium">{{ account.username }}</span>
+              </div>
+            </td>
+            <td class="dashTd text-subtle">{{ account.email|default:"—" }}</td>
+            <td class="dashTd">
+              {% if account.is_staff %}
+                <span class="dashChip bg-brand/10 text-brand">Staff</span>
+              {% else %}
+                <span class="dashChip bg-page text-subtle">Customer</span>
+              {% endif %}
+            </td>
+            <td class="dashTd">{{ account.order_count }}</td>
+            <td class="dashTd text-subtle">{{ account.date_joined|date:"d M Y" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="px-4 py-14 text-center text-[13.5px] text-subtle">No users yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

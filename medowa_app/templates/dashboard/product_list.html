@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block title %}Products — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Products</h1>
+    <p class="mt-1 text-[14px] text-subtle">{{ products|length }} product{{ products|length|pluralize }} in the catalogue.</p>
+  </div>
+  <a href="{% url 'dashboard_product_create' %}" class="dashBtn">New product</a>
+</div>
+
+<form method="get" class="mt-5 flex flex-wrap gap-3">
+  <input type="search" name="q" value="{{ query }}" placeholder="Search by name or category" class="dashInput max-w-md flex-1">
+  <button type="submit" class="dashBtnGhost">Search</button>
+  {% if query %}<a href="{% url 'dashboard_products' %}" class="dashBtnGhost">Clear</a>{% endif %}
+</form>
+
+<div class="dashPanel mt-5 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[720px] border-collapse">
+      <thead class="border-b border-black/[0.06] bg-page/60">
+        <tr>
+          <th class="dashTh">Product</th>
+          <th class="dashTh">Category</th>
+          <th class="dashTh">Price</th>
+          <th class="dashTh">Status</th>
+          <th class="dashTh text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-black/[0.06]">
+        {% for product in products %}
+          <tr class="transition hover:bg-page">
+            <td class="dashTd">
+              <div class="flex items-center gap-3.5">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-page p-1.5">
+                  {% if product.image_url %}<img src="{{ product.image_url }}" alt="" class="h-full w-full object-contain">{% endif %}
+                </span>
+                <div class="min-w-0">
+                  <a href="{% url 'dashboard_product_edit' product.pk %}" class="block truncate font-medium text-ink hover:text-brand">{{ product.name }}</a>
+                  <span class="text-[12px] text-subtle">CS-{{ product.pk|stringformat:"04d" }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="dashTd"><span class="dashChip bg-page text-subtle">{{ product.category.name }}</span></td>
+            <td class="dashTd font-semibold">₹{{ product.price|floatformat:0|intcomma }}</td>
+            <td class="dashTd">
+              {% if product.is_active %}
+                <span class="dashChip bg-[#f2fbf5] text-[#1d7a45]">Active</span>
+              {% else %}
+                <span class="dashChip bg-page text-subtle">Hidden</span>
+              {% endif %}
+            </td>
+            <td class="dashTd">
+              <div class="flex items-center justify-end gap-2">
+                <form method="post" action="{% url 'dashboard_product_toggle' product.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">{% if product.is_active %}Hide{% else %}Show{% endif %}</button>
+                </form>
+                <a href="{% url 'dashboard_product_edit' product.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
+                <form method="post" action="{% url 'dashboard_product_delete' product.pk %}" onsubmit="return confirm('Delete &quot;{{ product.name|escapejs }}&quot;? This cannot be undone.');">
+                  {% csrf_token %}
+                  <button type="submit" class="dashBtnDanger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="px-4 py-14 text-center text-[13.5px] text-subtle">
+              {% if query %}No products match “{{ query }}”.{% else %}No products yet. Create your first one.{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
