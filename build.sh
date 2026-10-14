@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -o errexit
 
-cd "$(dirname "$0")/backend"
+pip install --upgrade pip
+pip install -r requirements.txt
 
-exec bash ./build.sh
+python manage.py migrate --noinput
+python manage.py seed_store
+python manage.py ensure_accounts
+python manage.py collectstatic --noinput

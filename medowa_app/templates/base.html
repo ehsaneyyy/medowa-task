@@ -29,7 +29,7 @@
   <style type="text/tailwindcss">
     @layer components {
       .navBar {
-        @apply border-b border-black/[0.08] bg-white/80 backdrop-blur-xl backdrop-saturate-150;
+        @apply sticky top-0 z-40 border-b border-black/[0.08] bg-white;
       }
 
       .navLink {
@@ -46,6 +46,14 @@
 
       .cardLift {
         @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)];
+      }
+
+      .catTag {
+        @apply inline-flex w-fit items-center rounded-full border border-black/[0.06] bg-page px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-subtle;
+      }
+
+      .buyNow {
+        @apply inline-flex w-full items-center justify-center rounded-full bg-brand px-4 py-2 text-[13px] font-medium text-white transition duration-200 hover:bg-[#0077ed] active:scale-[0.99];
       }
 
       .btnPrimary {
@@ -65,7 +73,7 @@
       }
 
       .sectionTitle {
-        @apply text-[32px] font-semibold tracking-tight text-ink md:text-[40px];
+        @apply text-[28px] font-semibold tracking-tight text-ink sm:text-[32px] md:text-[40px];
       }
 
       .eyebrow {
@@ -135,6 +143,10 @@
         @apply mb-2 block text-[12px] text-subtle transition hover:text-ink hover:underline;
       }
 
+      .footerText {
+        @apply mb-2 block text-[12px] text-subtle;
+      }
+
       .statTile {
         @apply rounded-2xl border border-black/[0.06] bg-white p-5;
       }
@@ -143,28 +155,29 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body class="flex min-h-screen flex-col bg-page font-display text-ink">
-  <header class="navBar sticky top-0 z-40">
+  <header class="navBar">
     <div class="mx-auto flex h-12 w-full max-w-[1024px] items-center gap-2 px-3 sm:gap-3 sm:px-5">
-      <a href="{% url 'index' %}" class="flex shrink-0 items-center gap-2" aria-label="medowa-task home">
-        <span class="flex h-6 w-6 items-center justify-center rounded-md bg-ink">
-          <span class="h-2.5 w-2.5 rounded-sm border-2 border-white"></span>
-        </span>
-        <span class="text-[14px] font-semibold tracking-tight text-ink sm:text-[15px]">medowa-task</span>
+      <a href="{% url 'index' %}" class="flex shrink-0 items-center gap-2" aria-label="medowa-task">
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-[15px] font-semibold text-white" aria-hidden="true">m</span>
+        <span class="hidden text-[13px] font-semibold tracking-tight text-ink sm:inline">medowa-task</span>
       </a>
 
-      <nav class="scrollbar-none -mx-1 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto whitespace-nowrap px-1 sm:gap-1">
+      <nav class="scrollbar-none -mx-1 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap px-1" aria-label="Store categories">
         <a href="{% url 'index' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'index' and not active_category %}navLinkActive{% endif %}">Store</a>
         <a href="{% url 'index' %}?category=mac" class="navLink shrink-0 {% if active_category == 'mac' %}navLinkActive{% endif %}">Mac</a>
         <a href="{% url 'index' %}?category=iphone" class="navLink shrink-0 {% if active_category == 'iphone' %}navLinkActive{% endif %}">iPhone</a>
         <a href="{% url 'index' %}?category=ipad" class="navLink shrink-0 {% if active_category == 'ipad' %}navLinkActive{% endif %}">iPad</a>
         <a href="{% url 'index' %}?category=watch" class="navLink shrink-0 {% if active_category == 'watch' %}navLinkActive{% endif %}">Watch</a>
+        <a href="{% url 'index' %}?category=mac" class="navLink shrink-0">MacBook</a>
         {% if user.is_authenticated %}
-          <span class="mx-1 h-4 w-px shrink-0 bg-black/10"></span>
           <a href="{% url 'profile' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'profile' %}navLinkActive{% endif %}">Profile</a>
         {% endif %}
       </nav>
 
       <div class="flex shrink-0 items-center gap-1">
+        {% if user.is_staff %}
+          <a href="{% url 'admin:index' %}" class="navLink hidden sm:inline-flex">Admin</a>
+        {% endif %}
         {% if user.is_authenticated %}
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
@@ -192,7 +205,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="border-t border-black/[0.08] bg-page">
+  <footer class="mt-16 border-t border-black/[0.08] bg-white">
     <div class="mx-auto w-full max-w-[1024px] px-4 py-12 sm:px-5">
       <div class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
         <div>
@@ -208,21 +221,21 @@
           <a href="{% url 'profile' %}" class="footerLink">Profile</a>
           <a href="{% url 'login' %}" class="footerLink">Login</a>
           <a href="{% url 'register' %}" class="footerLink">Register</a>
-          <a href="{% url 'index' %}" class="footerLink">Order status</a>
+          <a href="{% url 'admin:index' %}" class="footerLink">Admin</a>
         </div>
         <div>
           <p class="footerHead">Services</p>
-          <a href="{% url 'index' %}" class="footerLink">Financing</a>
-          <a href="{% url 'index' %}" class="footerLink">Trade In</a>
-          <a href="{% url 'index' %}" class="footerLink">Delivery</a>
-          <a href="{% url 'index' %}" class="footerLink">Support</a>
+          <span class="footerText">Free delivery</span>
+          <span class="footerText">Trade In</span>
+          <span class="footerText">Free returns</span>
+          <span class="footerText">Support</span>
         </div>
         <div>
           <p class="footerHead">Company</p>
-          <a href="{% url 'index' %}" class="footerLink">About</a>
-          <a href="{% url 'index' %}" class="footerLink">Values</a>
-          <a href="{% url 'index' %}" class="footerLink">Privacy</a>
-          <a href="{% url 'index' %}" class="footerLink">Contact</a>
+          <span class="footerText">About medowa-task</span>
+          <span class="footerText">Careers</span>
+          <span class="footerText">Privacy</span>
+          <span class="footerText">Contact</span>
         </div>
       </div>
       <div class="mt-10 flex flex-col gap-3 border-t border-black/[0.08] pt-5 text-[12px] text-subtle md:flex-row md:items-center md:justify-between">

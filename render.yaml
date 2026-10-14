@@ -9,7 +9,6 @@ services:
     name: medowa-task
     runtime: python
     plan: free
-    rootDir: backend
     buildCommand: './build.sh'
     startCommand: 'gunicorn medowa_task.wsgi:application --bind 0.0.0.0:$PORT'
     healthCheckPath: /
