@@ -1,4 +1,9 @@
+import os
 from pathlib import Path
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
