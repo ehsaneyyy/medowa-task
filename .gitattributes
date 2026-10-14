@@ -3,3 +3,5 @@
 *.html text eol=lf
 *.yaml text eol=lf
 Procfile text eol=lf
+.python-version text eol=lf
+requirements.txt text eol=lf
