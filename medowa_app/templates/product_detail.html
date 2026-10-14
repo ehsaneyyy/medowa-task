@@ -51,13 +51,12 @@
     </dl>
 
     <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-      {% if user.is_authenticated %}
-        <a href="{% url 'profile' %}" class="btnPrimary w-full sm:w-auto">Add to Bag</a>
-        <a href="{% url 'index' %}?category={{ product.category.slug }}" class="btnNeutral w-full sm:w-auto">Back to {{ product.category.name }}</a>
-      {% else %}
-        <a href="{% url 'login' %}?next={{ product.get_absolute_url }}" class="btnPrimary w-full sm:w-auto">Add to Bag</a>
-        <a href="{% url 'index' %}" class="btnNeutral w-full sm:w-auto">Continue shopping</a>
-      {% endif %}
+      <form method="post" action="{% url 'add_to_cart' product.pk %}" class="w-full sm:w-auto">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ product.get_absolute_url }}">
+        <button type="submit" class="btnPrimary w-full">Add to Bag</button>
+      </form>
+      <a href="{% url 'index' %}?category={{ product.category.slug }}" class="btnNeutral w-full sm:w-auto">Back to {{ product.category.name }}</a>
     </div>
 
     <div class="mt-7 grid gap-3 text-[13px] text-subtle sm:grid-cols-2 sm:text-[14px]">

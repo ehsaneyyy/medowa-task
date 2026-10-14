@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}Your profile — medowa-task{% endblock %}
 
@@ -37,6 +38,31 @@
         <p class="mt-2 text-[24px] font-semibold tracking-tight text-ink">{{ stat.value }}</p>
       </div>
     {% endfor %}
+  </div>
+
+  <div class="card mt-6 p-7 md:p-8">
+    <div class="mb-5 flex items-center justify-between">
+      <h2 class="text-[20px] font-semibold tracking-tight text-ink">Order history</h2>
+      <span class="rounded-full border border-black/[0.08] bg-page px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-subtle">{{ order_count }} order{{ order_count|pluralize }}</span>
+    </div>
+    {% if orders %}
+      <div class="divide-y divide-black/[0.08]">
+        {% for order in orders %}
+          <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <a href="{% url 'order_success' order.pk %}" class="text-[15px] font-semibold text-ink transition hover:text-brand">{{ order.reference }}</a>
+              <p class="mt-0.5 text-[13px] text-subtle">{{ order.created_at|date:"d M Y, H:i" }} &middot; {{ order.item_count }} item{{ order.item_count|pluralize }} &middot; {{ order.get_status_display }}</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-[15px] font-semibold text-ink">₹{{ order.total|floatformat:0|intcomma }}</span>
+              <a href="{% url 'order_success' order.pk %}" class="link text-[14px]">View</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-[15px] text-subtle">You have not placed any orders yet. <a href="{% url 'index' %}" class="link">Start shopping</a>.</p>
+    {% endif %}
   </div>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">

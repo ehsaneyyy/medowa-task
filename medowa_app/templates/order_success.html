@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Order {{ order.reference }} — medowa-task{% endblock %}
+
+{% block content %}
+<section class="mx-auto w-full max-w-[820px] px-4 py-12 sm:px-5 sm:py-16">
+  <div class="card p-7 text-center sm:p-10">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f2fbf5] text-[26px] font-semibold text-[#1d7a45]">&#10003;</div>
+    <h1 class="mt-5 text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Thank you for your order</h1>
+    <p class="mt-2 text-[15px] text-subtle">Order <span class="font-semibold text-ink">{{ order.reference }}</span> has been placed successfully.</p>
+  </div>
+
+  <div class="card mt-6 p-6 sm:p-7">
+    <h2 class="text-[18px] font-semibold text-ink">Items</h2>
+    <ul class="mt-4 divide-y divide-black/[0.08]">
+      {% for item in order.items.all %}
+        <li class="flex items-center justify-between gap-4 py-3">
+          <span class="text-[14px] text-ink">{{ item.product.name|default:"Item" }} <span class="text-subtle">&times; {{ item.quantity }}</span></span>
+          <span class="text-[14px] text-ink">₹{{ item.line_total|floatformat:0|intcomma }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="mt-4 flex items-center justify-between border-t border-black/[0.08] pt-4">
+      <span class="text-[15px] font-semibold text-ink">Total paid</span>
+      <span class="text-[18px] font-semibold text-ink">₹{{ order.total|floatformat:0|intcomma }}</span>
+    </div>
+  </div>
+
+  <div class="card mt-6 p-6 sm:p-7">
+    <h2 class="text-[18px] font-semibold text-ink">Delivery details</h2>
+    <dl class="mt-4 divide-y divide-black/[0.08]">
+      <div class="flex justify-between gap-4 py-3"><dt class="text-[13px] text-subtle">Name</dt><dd class="text-[14px] text-ink">{{ order.full_name }}</dd></div>
+      <div class="flex justify-between gap-4 py-3"><dt class="text-[13px] text-subtle">Email</dt><dd class="text-[14px] text-ink">{{ order.email }}</dd></div>
+      <div class="flex justify-between gap-4 py-3"><dt class="text-[13px] text-subtle">Address</dt><dd class="text-right text-[14px] text-ink">{{ order.address }}, {{ order.city }} {{ order.postal_code }}</dd></div>
+      <div class="flex justify-between gap-4 py-3"><dt class="text-[13px] text-subtle">Status</dt><dd class="text-[14px] text-ink">{{ order.get_status_display }}</dd></div>
+    </dl>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+    <a href="{% url 'index' %}" class="btnPrimary w-full sm:w-auto">Continue shopping</a>
+    <a href="{% url 'profile' %}" class="btnNeutral w-full sm:w-auto">View my orders</a>
+  </div>
+</section>
+{% endblock %}

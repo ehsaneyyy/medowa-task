@@ -175,6 +175,7 @@
       </nav>
 
       <div class="flex shrink-0 items-center gap-1">
+        <a href="{% url 'cart' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'cart' %}navLinkActive{% endif %}">Bag{% if cart_count %}<span class="ml-1 rounded-full bg-brand px-1.5 text-[10px] font-semibold text-white">{{ cart_count }}</span>{% endif %}</a>
         {% if user.is_staff %}
           <a href="{% url 'admin:index' %}" class="navLink hidden sm:inline-flex">Admin</a>
         {% endif %}

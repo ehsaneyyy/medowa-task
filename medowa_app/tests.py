@@ -17,7 +17,7 @@ from .credentials import (
     TEST_USERNAME,
     ensure_accounts,
 )
-from .models import Banner, Category, Product
+from .models import Banner, Category, Order, OrderItem, Product
 
 
 class StoreFixturesMixin:
@@ -211,7 +211,7 @@ class UrlRoutingTests(StoreFixturesMixin, TestCase):
 
 class BrandingTests(StoreFixturesMixin, TestCase):
 
-    def test_storefront_pages_use_core_store_branding(self):
+    def test_storefront_pages_use_medowa_task_branding(self):
         for name, args in (('index', []), ('register', []), ('login', [])):
             response = self.client.get(reverse(name, args=args))
             self.assertEqual(response.status_code, 200)
@@ -367,3 +367,104 @@ class ProductImageUploadTests(StoreFixturesMixin, TestCase):
         self.macbook.save()
         response = self.client.get(reverse('api_product_detail', args=[self.macbook.pk]))
         self.assertIn('/media/products/', response.json()['image'])
+
+
+class CartAndCheckoutTests(StoreFixturesMixin, TestCase):
+
+    def setUp(self):
+        self.customer = User.objects.create_user('shopper', 'shopper@example.com', 'Sh0pSecure!')
+
+    def test_cart_routes_resolve(self):
+        self.assertEqual(reverse('cart'), '/cart/')
+        self.assertEqual(reverse('add_to_cart', args=[1]), '/cart/add/1/')
+        self.assertEqual(reverse('update_cart', args=[1]), '/cart/update/1/')
+        self.assertEqual(reverse('remove_from_cart', args=[1]), '/cart/remove/1/')
+        self.assertEqual(reverse('checkout'), '/checkout/')
+        self.assertEqual(reverse('order_success', args=[1]), '/orders/1/')
+
+    def test_add_to_cart_stores_item_in_session(self):
+        response = self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 2})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.session['cart'][str(self.macbook.pk)], 2)
+
+    def test_add_to_cart_rejects_get(self):
+        response = self.client.get(reverse('add_to_cart', args=[self.macbook.pk]))
+        self.assertEqual(response.status_code, 405)
+
+    def test_add_to_cart_hides_inactive_product(self):
+        response = self.client.post(reverse('add_to_cart', args=[self.hidden_product.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_cart_page_lists_items_and_total(self):
+        self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 2})
+        response = self.client.get(reverse('cart'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'cart.html')
+        self.assertContains(response, 'MacBook Air 13-inch M4')
+        self.assertEqual(response.context['total'], Decimal('199800.00'))
+
+    def test_update_and_remove_cart_item(self):
+        self.client.post(reverse('add_to_cart', args=[self.macbook.pk]))
+        self.client.post(reverse('update_cart', args=[self.macbook.pk]), {'quantity': 3})
+        self.assertEqual(self.client.session['cart'][str(self.macbook.pk)], 3)
+        self.client.post(reverse('remove_from_cart', args=[self.macbook.pk]))
+        self.assertNotIn(str(self.macbook.pk), self.client.session['cart'])
+
+    def test_checkout_requires_login(self):
+        response = self.client.get(reverse('checkout'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('login'), response.url)
+
+    def test_checkout_redirects_when_bag_empty(self):
+        self.client.force_login(self.customer)
+        response = self.client.get(reverse('checkout'))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('index'))
+
+    def test_checkout_creates_order_and_clears_bag(self):
+        self.client.force_login(self.customer)
+        self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 2})
+        response = self.client.post(reverse('checkout'), {
+            'full_name': 'Shopper One',
+            'email': 'shopper@example.com',
+            'address': '1 Infinite Loop',
+            'city': 'Bengaluru',
+            'postal_code': '560001',
+        })
+        self.assertEqual(response.status_code, 302)
+        order = Order.objects.get(user=self.customer)
+        self.assertEqual(order.items.count(), 1)
+        self.assertEqual(order.total, Decimal('199800.00'))
+        self.assertEqual(order.items.first().price, Decimal('99900.00'))
+        self.assertEqual(self.client.session['cart'], {})
+        self.assertEqual(order.reference, 'ORD-%05d' % order.pk)
+
+    def test_order_success_is_scoped_to_owner(self):
+        other = User.objects.create_user('intruder', 'intruder@example.com', 'N0tYours!')
+        order = Order.objects.create(
+            user=self.customer,
+            full_name='Shopper One',
+            email='shopper@example.com',
+            address='Street',
+            city='City',
+            postal_code='560001',
+            total=Decimal('1000.00'),
+        )
+        self.client.force_login(other)
+        response = self.client.get(reverse('order_success', args=[order.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_profile_lists_order_history(self):
+        self.client.force_login(self.customer)
+        Order.objects.create(
+            user=self.customer,
+            full_name='Shopper One',
+            email='shopper@example.com',
+            address='Street',
+            city='City',
+            postal_code='560001',
+            total=Decimal('1000.00'),
+        )
+        response = self.client.get(reverse('profile'))
+        self.assertContains(response, 'Order history')
+        self.assertContains(response, Order.objects.first().reference)
