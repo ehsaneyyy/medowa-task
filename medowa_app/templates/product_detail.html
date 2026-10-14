@@ -1,98 +1,89 @@
 {% extends "base.html" %}
 {% load humanize %}
 
-{% block title %}{{ product.name }} — Medowa Store{% endblock %}
+{% block title %}{{ product.name }} — Core Store{% endblock %}
 
 {% block content %}
-<section class="mx-auto w-full max-w-[1240px] px-5 pb-6 pt-8">
-  <nav class="flex items-center gap-2 text-[13px] text-neutral-500">
-    <a href="{% url 'index' %}" class="transition hover:text-white">Store</a>
+<section class="mx-auto w-full max-w-[1024px] px-5 pt-6">
+  <nav class="flex items-center gap-2 text-[12px] text-subtle">
+    <a href="{% url 'index' %}" class="transition hover:text-ink">Store</a>
     <span>&rsaquo;</span>
-    <a href="{% url 'index' %}?category={{ product.category.slug }}" class="transition hover:text-white">{{ product.category.name }}</a>
+    <a href="{% url 'index' %}?category={{ product.category.slug }}" class="transition hover:text-ink">{{ product.category.name }}</a>
     <span>&rsaquo;</span>
-    <span class="text-neutral-300">{{ product.name }}</span>
+    <span class="text-ink">{{ product.name }}</span>
   </nav>
 </section>
 
-<section class="mx-auto grid w-full max-w-[1240px] gap-10 px-5 pb-16 lg:grid-cols-[1.15fr_1fr]">
-  <div class="premiumCard sticky top-20 self-start overflow-hidden border-none">
-    <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-[#1a1b1f] to-[#0d0d10]">
-      <img src="{{ product.image }}" alt="{{ product.name }}" class="h-full w-full object-cover">
-      <span class="absolute left-5 top-5 rounded-full border border-white/10 bg-black/50 px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-wider text-neutral-200 backdrop-blur-md">{{ product.category.name }}</span>
+<section class="mx-auto grid w-full max-w-[1024px] gap-10 px-5 pb-14 pt-8 lg:grid-cols-2 lg:gap-14">
+  <div class="card sticky top-16 self-start overflow-hidden">
+    <div class="flex aspect-square items-center justify-center bg-white p-10">
+      <img src="{{ product.image }}" alt="{{ product.name }}" class="h-full w-full object-contain">
     </div>
   </div>
 
-  <div class="flex flex-col">
-    <p class="text-[13px] font-medium uppercase tracking-[0.26em] text-blue-400">In stock &middot; ships tomorrow</p>
-    <h1 class="mt-3 text-4xl font-semibold leading-[1.08] tracking-tight text-white md:text-5xl">{{ product.name }}</h1>
-    <p class="mt-5 text-[26px] font-medium text-white">₹{{ product.price|floatformat:0|intcomma }}</p>
-    <p class="mt-1 text-[14px] text-neutral-500">Inclusive of all taxes &middot; Free next-day delivery</p>
+  <div class="flex flex-col text-right">
+    <p class="eyebrow">{{ product.category.name }}</p>
+    <h1 class="mt-3 text-[32px] font-semibold leading-[1.08] tracking-tight text-ink md:text-[44px]">{{ product.name }}</h1>
+    <p class="mt-4 text-[24px] font-medium text-ink md:text-[28px]">₹{{ product.price|floatformat:0|intcomma }}</p>
+    <p class="mt-2 text-[13px] text-subtle">Inclusive of all taxes. Free delivery and free returns.</p>
 
-    <div class="mt-7 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-6">
-      <p class="text-[15px] leading-relaxed text-neutral-300">{{ product.description }}</p>
+    <div class="mt-7 border-t border-black/[0.08] pt-7">
+      <p class="text-[15px] leading-relaxed text-ink">{{ product.description }}</p>
     </div>
 
-    <div class="mt-7 flex flex-wrap gap-3">
-      {% if user.is_authenticated %}
-        <span class="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-7 py-3 text-[15px] font-medium text-neutral-500" title="Checkout is unavailable in this preview">Buy now</span>
-        <a href="{% url 'profile' %}" class="ctaGhost">Your account</a>
-      {% else %}
-        <a href="{% url 'login' %}?next={{ product.get_absolute_url }}" class="ctaPrimary">Sign in to buy</a>
-        <a href="{% url 'index' %}" class="ctaGhost">Continue shopping</a>
-      {% endif %}
-    </div>
-
-    <dl class="mt-9 grid grid-cols-1 gap-px overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.06] sm:grid-cols-2">
-      <div class="bg-ink-800 p-5">
-        <dt class="text-[12px] uppercase tracking-[0.16em] text-neutral-500">Collection</dt>
-        <dd class="mt-1.5 text-[15px] text-white">{{ product.category.name }}</dd>
+    <dl class="mt-7 divide-y divide-black/[0.08] border-y border-black/[0.08]">
+      <div class="flex items-center justify-between py-3.5">
+        <dt class="text-[13px] text-subtle">Availability</dt>
+        <dd class="text-[14px] text-ink">{% if product.is_active %}In stock{% else %}Unavailable{% endif %}</dd>
       </div>
-      <div class="bg-ink-800 p-5">
-        <dt class="text-[12px] uppercase tracking-[0.16em] text-neutral-500">Availability</dt>
-        <dd class="mt-1.5 text-[15px] text-white">{% if product.is_active %}Active listing{% else %}Archived{% endif %}</dd>
+      <div class="flex items-center justify-between py-3.5">
+        <dt class="text-[13px] text-subtle">Collection</dt>
+        <dd class="text-[14px] text-ink">{{ product.category.name }}</dd>
       </div>
-      <div class="bg-ink-800 p-5">
-        <dt class="text-[12px] uppercase tracking-[0.16em] text-neutral-500">Added</dt>
-        <dd class="mt-1.5 text-[15px] text-white">{{ product.created_at|date:"d M Y" }}</dd>
+      <div class="flex items-center justify-between py-3.5">
+        <dt class="text-[13px] text-subtle">Item reference</dt>
+        <dd class="text-[14px] text-ink">CS-{{ product.pk|stringformat:"04d" }}</dd>
       </div>
-      <div class="bg-ink-800 p-5">
-        <dt class="text-[12px] uppercase tracking-[0.16em] text-neutral-500">Reference</dt>
-        <dd class="mt-1.5 text-[15px] text-white">MDW-{{ product.pk|stringformat:"04d" }}</dd>
+      <div class="flex items-center justify-between py-3.5">
+        <dt class="text-[13px] text-subtle">Added to store</dt>
+        <dd class="text-[14px] text-ink">{{ product.created_at|date:"d M Y" }}</dd>
       </div>
     </dl>
 
-    <div class="mt-8 grid gap-3 text-[14px] text-neutral-400 sm:grid-cols-2">
-      <div class="flex items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 h-5 w-5 shrink-0 text-blue-400">
-          <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>
-        </svg>
-        <span>Free delivery across India, usually within 24 hours.</span>
-      </div>
-      <div class="flex items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 h-5 w-5 shrink-0 text-blue-400">
-          <path d="M12 3l7 3v6c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/>
-        </svg>
-        <span>1-year limited warranty with priority support.</span>
-      </div>
+    <div class="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-end">
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="btnPrimary">Open your profile</a>
+        <a href="{% url 'index' %}?category={{ product.category.slug }}" class="btnNeutral">Back to {{ product.category.name }}</a>
+      {% else %}
+        <a href="{% url 'login' %}?next={{ product.get_absolute_url }}" class="btnPrimary">Sign in to buy</a>
+        <a href="{% url 'index' %}" class="btnNeutral">Continue shopping</a>
+      {% endif %}
+    </div>
+
+    <div class="mt-8 grid gap-3 text-right text-[14px] text-subtle sm:grid-cols-2">
+      <div class="rounded-2xl border border-black/[0.06] bg-white p-4">Free delivery across India, usually within 24 hours.</div>
+      <div class="rounded-2xl border border-black/[0.06] bg-white p-4">One-year limited warranty with priority support.</div>
     </div>
   </div>
 </section>
 
 {% if related_products %}
-  <section class="mx-auto w-full max-w-[1240px] px-5 pb-20">
-    <h2 class="mb-6 text-2xl font-semibold tracking-tight text-white">More from {{ product.category.name }}</h2>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {% for item in related_products %}
-        <a href="{{ item.get_absolute_url }}" class="premiumCard group flex flex-col overflow-hidden">
-          <div class="relative aspect-square overflow-hidden bg-gradient-to-b from-[#1a1b1f] to-[#101013]">
-            <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]">
-          </div>
-          <div class="p-6">
-            <h3 class="text-[16px] font-semibold text-white transition group-hover:text-blue-300">{{ item.name }}</h3>
-            <p class="mt-3 text-[16px] font-medium text-white">₹{{ item.price|floatformat:0|intcomma }}</p>
-          </div>
-        </a>
-      {% endfor %}
+  <section class="border-t border-black/[0.08] bg-white">
+    <div class="mx-auto w-full max-w-[1024px] px-5 py-14">
+      <h2 class="sectionTitle">More from {{ product.category.name }}</h2>
+      <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {% for item in related_products %}
+          <a href="{{ item.get_absolute_url }}" class="card cardLift flex flex-col overflow-hidden">
+            <div class="flex aspect-square items-center justify-center bg-white p-6">
+              <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy" class="h-full w-full object-contain">
+            </div>
+            <div class="border-t border-black/[0.06] px-5 py-5">
+              <h3 class="text-[15px] font-semibold leading-snug text-ink">{{ item.name }}</h3>
+              <p class="mt-2 text-[14px] text-subtle">From ₹{{ item.price|floatformat:0|intcomma }}</p>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
     </div>
   </section>
 {% endif %}

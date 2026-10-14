@@ -5,6 +5,13 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
+from .credentials import (
+    ADMIN_PASSWORD,
+    ADMIN_USERNAME,
+    TEST_PASSWORD,
+    TEST_USERNAME,
+    ensure_accounts,
+)
 from .models import Banner, Category, Product
 
 
@@ -115,7 +122,7 @@ class AuthFlowTests(StoreFixturesMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(User.objects.filter(username='applefan').exists())
         self.assertTrue(response.context['user'].is_authenticated)
-        self.assertContains(response, 'Welcome to Medowa')
+        self.assertContains(response, 'Welcome to Core Store')
 
     def test_register_rejects_duplicate_email(self):
         User.objects.create_user('existing', 'used@example.com', 'pass12345A!')
@@ -195,3 +202,80 @@ class UrlRoutingTests(StoreFixturesMixin, TestCase):
             response = self.client.get(reverse(name))
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, 'csrfmiddlewaretoken')
+
+
+class BrandingTests(StoreFixturesMixin, TestCase):
+
+    def test_storefront_pages_use_core_store_branding(self):
+        for name, args in (('index', []), ('register', []), ('login', [])):
+            response = self.client.get(reverse(name, args=args))
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'Core Store')
+
+    def test_storefront_pages_drop_legacy_branding(self):
+        for name, args in (('index', []), ('register', []), ('login', [])):
+            response = self.client.get(reverse(name, args=args))
+            self.assertNotContains(response, 'Medowa')
+
+    def test_product_detail_uses_core_store_reference_prefix(self):
+        response = self.client.get(reverse('product_detail', args=[self.macbook.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'CS-')
+        self.assertNotContains(response, 'MDW-')
+
+
+class CredentialVerificationTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin_user, cls.test_user = ensure_accounts()
+
+    def test_admin_route_resolves_to_admin_path(self):
+        self.assertEqual(reverse('admin:index'), '/admin/')
+
+    def test_admin_account_has_superuser_privileges(self):
+        self.assertEqual(self.admin_user.username, ADMIN_USERNAME)
+        self.assertTrue(self.admin_user.is_staff)
+        self.assertTrue(self.admin_user.is_superuser)
+        self.assertTrue(self.admin_user.check_password(ADMIN_PASSWORD))
+
+    def test_test_account_is_a_customer(self):
+        self.assertEqual(self.test_user.username, TEST_USERNAME)
+        self.assertFalse(self.test_user.is_staff)
+        self.assertFalse(self.test_user.is_superuser)
+        self.assertTrue(self.test_user.check_password(TEST_PASSWORD))
+
+    def test_admin_user_can_reach_admin_console(self):
+        self.client.login(username=ADMIN_USERNAME, password=ADMIN_PASSWORD)
+        response = self.client.get(reverse('admin:index'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_test_user_login_renders_profile_dashboard_with_stats(self):
+        response = self.client.post(reverse('login'), {
+            'username': TEST_USERNAME,
+            'password': TEST_PASSWORD,
+        })
+        self.assertRedirects(response, reverse('index'))
+        profile = self.client.get(reverse('profile'))
+        self.assertEqual(profile.status_code, 200)
+        self.assertTemplateUsed(profile, 'profile.html')
+        self.assertContains(profile, TEST_USERNAME)
+        for expected in ('Account details', 'Member for', 'Date joined', 'Store products', 'Session expiry'):
+            self.assertContains(profile, expected)
+
+    def test_wrong_password_is_rejected_for_test_user(self):
+        response = self.client.post(reverse('login'), {
+            'username': TEST_USERNAME,
+            'password': 'definitely-wrong',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context['user'].is_authenticated)
+
+    def test_ensure_accounts_command_is_idempotent(self):
+        call_command('ensure_accounts')
+        call_command('ensure_accounts')
+        self.assertEqual(User.objects.filter(username=ADMIN_USERNAME).count(), 1)
+        self.assertEqual(User.objects.filter(username=TEST_USERNAME).count(), 1)
+
+    def test_verify_accounts_command_passes(self):
+        call_command('verify_accounts')

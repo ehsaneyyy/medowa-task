@@ -1,49 +1,42 @@
 {% extends "base.html" %}
 
-{% block title %}Sign in — Medowa Store{% endblock %}
+{% block title %}Login — Core Store{% endblock %}
 
 {% block content %}
-<section class="relative overflow-hidden">
-  <div class="pointer-events-none absolute -right-40 -top-32 h-[420px] w-[420px] rounded-full bg-blue-600/20 blur-[140px]"></div>
-  <div class="pointer-events-none absolute -left-32 bottom-0 h-[360px] w-[360px] rounded-full bg-emerald-600/10 blur-[140px]"></div>
+<section class="mx-auto w-full max-w-[1024px] px-5 py-14">
+  <div class="mx-auto w-full max-w-[460px]">
+    <h1 class="text-[32px] font-semibold tracking-tight text-ink">Sign in</h1>
+    <p class="mt-2 text-[15px] leading-relaxed text-subtle">Use your Core Store account to view your profile dashboard and account statistics.</p>
 
-  <div class="mx-auto flex w-full max-w-[1240px] flex-col items-center px-5 py-16 md:py-24">
-    <div class="w-full max-w-[470px]">
-      <p class="text-[13px] font-medium uppercase tracking-[0.26em] text-blue-400">Welcome back</p>
-      <h1 class="mt-3 text-4xl font-semibold tracking-tight text-white">Sign in to Medowa</h1>
-      <p class="mt-3 text-[15px] leading-relaxed text-neutral-400">Access your profile, session details and everything you love about the store.</p>
-
-      <form method="post" action="{% url 'login' %}" class="premiumCard mt-8 p-7 md:p-8" novalidate>
-        {% csrf_token %}
-        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-        {% if form.non_field_errors %}
-          <div class="formNonField">
-            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
-          </div>
-        {% endif %}
-        {% for field in form %}
-          <div class="fieldRow">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {{ field.errors }}
-          </div>
-        {% endfor %}
-        <div class="mb-6 flex items-center gap-2.5">
-          <label class="flex cursor-pointer items-center gap-2.5 text-[13.5px] text-neutral-400">
-            <input type="checkbox" class="h-4 w-4 rounded border-white/20 bg-white/10 accent-blue-500">
-            Keep me signed in on this device
-          </label>
+    <form method="post" action="{% url 'login' %}" class="card mt-8 p-7" novalidate>
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      {% if form.non_field_errors %}
+        <div class="alertError">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
         </div>
-        <button type="submit" class="ctaPrimary w-full">Sign in</button>
-        <p class="mt-5 text-center text-[14px] text-neutral-400">
-          New to Medowa?
-          <a href="{% url 'register' %}" class="linkBlue ml-1">Create an account</a>
-        </p>
-      </form>
+      {% endif %}
+      {% for field in form %}
+        <div class="fieldRow">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btnPrimary w-full">Sign in</button>
+      <p class="mt-5 text-center text-[14px] text-subtle">
+        New to Core Store?
+        <a href="{% url 'register' %}" class="link">Create an account</a>
+      </p>
+    </form>
 
-      <div class="mt-6 rounded-3xl border border-white/[0.07] bg-white/[0.02] p-5 text-[13px] leading-relaxed text-neutral-500">
-        Demo credentials — username <span class="text-neutral-300">admin</span>, password <span class="text-neutral-300">Admin@12345</span>. The admin console lives at <a href="/admin/" class="linkBlue">/admin/</a>.
+    <div class="mt-6 rounded-2xl border border-black/[0.06] bg-white p-5">
+      <p class="text-[13px] font-semibold text-ink">Test credentials</p>
+      <div class="mt-3 space-y-2 text-[13px] text-subtle">
+        <p>Customer dashboard — <span class="text-ink">testuser</span> / <span class="text-ink">TestPass123!</span></p>
+        <p>Admin console — <span class="text-ink">admin</span> / <span class="text-ink">Admin@12345</span></p>
       </div>
+      <p class="mt-3 text-[12px] text-subtle">The admin console is served at <a href="/admin/" class="link">/admin/</a>.</p>
     </div>
   </div>
 </section>
