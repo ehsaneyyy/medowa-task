@@ -255,23 +255,38 @@
       </p>
     </div>
   </footer>
-  </footer>
   <script>
     (function () {
-      function revealHash() {
-        if (!window.location.hash) return;
-        var target = document.getElementById(window.location.hash.slice(1));
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
       }
-      window.addEventListener('load', function () {
-        setTimeout(scrollToHash, 90);
-      });
-      window.addEventListener('hashchange', scrollToHash);
-      function scrollToHash() {
-        if (!location.hash) return;
-        var target = document.getElementById(location.hash.slice(1));
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      function hashTarget() {
+        return location.hash ? document.getElementById(location.hash.slice(1)) : null;
       }
+
+      function settleScroll() {
+        var element = hashTarget();
+        if (!element) return;
+        var attempts = 0;
+        var lastTop = null;
+        function step() {
+          var top = element.getBoundingClientRect().top;
+          if (lastTop === null || Math.abs(top - lastTop) > 2) {
+            element.scrollIntoView({ behavior: attempts === 0 ? 'smooth' : 'auto', block: 'start' });
+          }
+          lastTop = top;
+          attempts += 1;
+          if (attempts < 12) {
+            window.setTimeout(step, 110);
+          }
+        }
+        step();
+      }
+
+      window.addEventListener('load', settleScroll);
+      window.addEventListener('hashchange', settleScroll);
+      window.addEventListener('DOMContentLoaded', settleScroll);
     })();
   </script>
 </body>
