@@ -1,0 +1,33 @@
+databases:
+  - name: medowa-db
+    plan: free
+    databaseName: medowa
+    user: medowa
+
+services:
+  - type: web
+    name: medowa-task
+    runtime: python
+    plan: free
+    buildCommand: './build.sh'
+    startCommand: 'gunicorn medowa_task.wsgi:application --bind 0.0.0.0:$PORT'
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DJANGO_DEBUG
+        value: 'False'
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: '.onrender.com'
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@medowa.local
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medowa-db
+          property: connectionString
