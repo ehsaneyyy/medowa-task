@@ -383,19 +383,28 @@ class CartAndCheckoutTests(StoreFixturesMixin, TestCase):
         self.assertEqual(reverse('order_success', args=[1]), '/orders/1/')
 
     def test_add_to_cart_stores_item_in_session(self):
+        self.client.force_login(self.customer)
         response = self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 2})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.client.session['cart'][str(self.macbook.pk)], 2)
+
+    def test_anonymous_add_to_cart_redirects_to_login(self):
+        response = self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 2})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('login'), response.url)
+        self.assertNotIn('cart', self.client.session)
 
     def test_add_to_cart_rejects_get(self):
         response = self.client.get(reverse('add_to_cart', args=[self.macbook.pk]))
         self.assertEqual(response.status_code, 405)
 
     def test_add_to_cart_hides_inactive_product(self):
+        self.client.force_login(self.customer)
         response = self.client.post(reverse('add_to_cart', args=[self.hidden_product.pk]))
         self.assertEqual(response.status_code, 404)
 
     def test_cart_page_lists_items_and_total(self):
+        self.client.force_login(self.customer)
         self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 2})
         response = self.client.get(reverse('cart'))
         self.assertEqual(response.status_code, 200)
@@ -404,11 +413,27 @@ class CartAndCheckoutTests(StoreFixturesMixin, TestCase):
         self.assertEqual(response.context['total'], Decimal('199800.00'))
 
     def test_update_and_remove_cart_item(self):
+        self.client.force_login(self.customer)
         self.client.post(reverse('add_to_cart', args=[self.macbook.pk]))
         self.client.post(reverse('update_cart', args=[self.macbook.pk]), {'quantity': 3})
         self.assertEqual(self.client.session['cart'][str(self.macbook.pk)], 3)
         self.client.post(reverse('remove_from_cart', args=[self.macbook.pk]))
         self.assertNotIn(str(self.macbook.pk), self.client.session['cart'])
+
+    def test_cart_update_returns_json_for_ajax(self):
+        self.client.force_login(self.customer)
+        self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 1})
+        response = self.client.post(
+            reverse('update_cart', args=[self.macbook.pk]),
+            {'quantity': 3},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['count'], 3)
+        self.assertEqual(data['items'][str(self.macbook.pk)]['quantity'], 3)
+        self.assertEqual(data['total_display'], '\u20b9299,700')
 
     def test_checkout_requires_login(self):
         response = self.client.get(reverse('checkout'))
@@ -468,3 +493,123 @@ class CartAndCheckoutTests(StoreFixturesMixin, TestCase):
         response = self.client.get(reverse('profile'))
         self.assertContains(response, 'Order history')
         self.assertContains(response, Order.objects.first().reference)
+
+
+class StaffAccountTests(StoreFixturesMixin, TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_user('boss', 'boss@example.com', 'AdminPass!23', is_staff=True)
+
+    def test_staff_add_to_cart_is_blocked(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse('add_to_cart', args=[self.macbook.pk]), {'quantity': 1})
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn('cart', self.client.session)
+
+    def test_staff_checkout_is_blocked(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('checkout'))
+        self.assertRedirects(response, reverse('index'))
+
+    def test_staff_homepage_shows_admin_notice(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'admin account')
+
+    def test_anonymous_homepage_prompts_sign_in(self):
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'Sign in to buy')
+
+
+class DashboardTests(StoreFixturesMixin, TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_user('boss', 'boss@example.com', 'AdminPass!23', is_staff=True)
+        self.customer = User.objects.create_user('shopper', 'shopper@example.com', 'Sh0pSecure!')
+
+    def test_dashboard_requires_login(self):
+        response = self.client.get(reverse('dashboard_home'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('login'), response.url)
+
+    def test_dashboard_blocks_customers(self):
+        self.client.force_login(self.customer)
+        response = self.client.get(reverse('dashboard_home'))
+        self.assertRedirects(response, reverse('index'))
+
+    def test_staff_can_open_every_dashboard_section(self):
+        self.client.force_login(self.admin)
+        for name in (
+            'dashboard_home',
+            'dashboard_products',
+            'dashboard_categories',
+            'dashboard_banners',
+            'dashboard_orders',
+            'dashboard_users',
+        ):
+            response = self.client.get(reverse(name))
+            self.assertEqual(response.status_code, 200, name)
+
+    def test_product_create_edit_toggle_delete(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse('dashboard_product_create'), {
+            'name': 'iPad Air M3',
+            'category': self.mac.pk,
+            'price': '69900.00',
+            'description': 'Thin and fast.',
+            'image': 'https://example.com/ipad.jpg',
+            'is_active': 'on',
+        })
+        self.assertEqual(response.status_code, 302)
+        product = Product.objects.get(name='iPad Air M3')
+        self.assertEqual(product.category, self.mac)
+
+        self.client.post(reverse('dashboard_product_toggle', args=[product.pk]))
+        product.refresh_from_db()
+        self.assertFalse(product.is_active)
+
+        self.client.post(reverse('dashboard_product_edit', args=[product.pk]), {
+            'name': 'iPad Air M3',
+            'category': self.mac.pk,
+            'price': '74900.00',
+            'description': 'Thin and fast.',
+            'image': 'https://example.com/ipad.jpg',
+            'is_active': 'on',
+        })
+        product.refresh_from_db()
+        self.assertEqual(product.price, Decimal('74900.00'))
+
+        self.client.post(reverse('dashboard_product_delete', args=[product.pk]))
+        self.assertFalse(Product.objects.filter(pk=product.pk).exists())
+
+    def test_category_and_banner_lifecycle(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse('dashboard_category_create'), {'name': 'AirPods', 'slug': 'airpods'})
+        self.assertTrue(Category.objects.filter(slug='airpods').exists())
+        self.client.post(reverse('dashboard_banner_create'), {
+            'title': 'Summer',
+            'subtitle': 'Hot deals',
+            'link_url': '/',
+            'image': 'https://example.com/summer.jpg',
+            'is_active': 'on',
+        })
+        banner = Banner.objects.get(title='Summer')
+        self.client.post(reverse('dashboard_banner_toggle', args=[banner.pk]))
+        banner.refresh_from_db()
+        self.assertFalse(banner.is_active)
+
+    def test_order_status_update(self):
+        self.client.force_login(self.admin)
+        order = Order.objects.create(
+            user=self.customer,
+            full_name='Shopper',
+            email='s@example.com',
+            address='Street',
+            city='City',
+            postal_code='560001',
+            total=Decimal('10.00'),
+        )
+        response = self.client.post(reverse('dashboard_order_status', args=[order.pk]), {'status': 'shipped'})
+        self.assertEqual(response.status_code, 302)
+        order.refresh_from_db()
+        self.assertEqual(order.status, 'shipped')

@@ -7,10 +7,12 @@ A database-driven e-commerce website built with Python and Django, inspired by t
 | Item | Value |
 | --- | --- |
 | Live Demo URL | https://medowa-task.onrender.com |
-| Admin Panel URL | https://medowa-task.onrender.com/admin/ |
+| Admin Panel URL | https://medowa-task.onrender.com/dashboard/ |
 | Admin Credentials | `admin` / `Admin@12345` |
 | Test User Credentials | `testuser` / `TestPass123!` |
 | GitHub Repository | https://github.com/ehsaneyyy/medowa-task |
+
+> The store dashboard at `/dashboard/` is a purpose-built control panel (overview, products, categories, banners, orders, users). Django Admin remains available to superusers at `/admin/` as a secondary tool.
 
 ## Technologies Used
 
@@ -30,12 +32,13 @@ A database-driven e-commerce website built with Python and Django, inspired by t
 ## Implemented Features
 
 1. **Homepage** — navigation/header, hero banner, featured products, product categories, promotional sections and footer. All sections are database-driven.
-2. **Dynamic Banner Management** — administrators can add, edit and delete banners, upload/change banner images, update title/content, and enable/disable banners from the admin. Changes reflect on the site immediately.
+2. **Dynamic Banner Management** — administrators can add, edit and delete banners, upload/change banner images, update title/content, and enable/disable banners from the dashboard. Changes reflect on the site immediately.
 3. **Product Management** — administrators can add, edit and delete products, upload product images, set name, description and price, assign a category, and enable/disable products. The storefront reads products dynamically from the database.
+   An **admin dashboard** (staff-only, `/dashboard/`) provides a purpose-built overview with live stats plus full product, category, banner, order and user management.
 4. **Product Details** — each product has its own page showing image, name, description, price, category and related product information.
 5. **User Authentication** — registration, login, logout, protected account pages and a user profile page (using Django's built-in authentication).
 6. **Admin Panel** — Django admin manages products, categories, banners and users, including product image uploads and an order list with inline order items.
-7. **Buy Flow** — session-based shopping bag, checkout with shipping details, and an order confirmation page with per-user order history on the profile.
+7. **Buy Flow** — session-based shopping bag with live quantity/price updating (AJAX), checkout with shipping details, and an order confirmation page with per-user order history on the profile. Buying is customer-only: anonymous visitors are prompted to sign in, and administrator accounts have purchasing disabled.
 8. **JSON API (read-only)** — endpoints exposing active products, categories and banners.
 
 ## Third-Party Libraries

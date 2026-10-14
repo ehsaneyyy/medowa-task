@@ -6,7 +6,7 @@
 {% block content %}
 <section class="mx-auto w-full max-w-[1024px] px-4 py-10 sm:px-5 sm:py-12">
   <h1 class="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Your Bag</h1>
-  <p class="mt-2 text-[15px] text-subtle">
+  <p class="mt-2 text-[15px] text-subtle" data-cart-summary>
     {% if items %}{{ cart_count }} item{{ cart_count|pluralize }} ready for checkout.{% else %}Your bag is empty.{% endif %}
   </p>
 
@@ -14,57 +14,123 @@
     <div class="mt-8 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
       <div class="card divide-y divide-black/[0.08] overflow-hidden">
         {% for item in items %}
-          <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6">
-            <a href="{{ item.product.get_absolute_url }}" class="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-page p-3">
-              <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="max-h-full max-w-full object-contain">
+          <div class="flex flex-col gap-4 p-4 transition sm:flex-row sm:items-center sm:p-5" data-item="{{ item.product.pk }}">
+            <a href="{{ item.product.get_absolute_url }}" class="group flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-3">
+              <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105">
             </a>
-            <div class="flex-1">
-              <p class="text-[11px] font-medium uppercase tracking-[0.14em] text-subtle">{{ item.product.category.name }}</p>
-              <a href="{{ item.product.get_absolute_url }}" class="mt-1 block text-[15px] font-semibold text-ink transition hover:text-brand">{{ item.product.name }}</a>
-              <p class="mt-1 text-[14px] text-subtle">₹{{ item.product.price|floatformat:0|intcomma }} each</p>
+            <div class="min-w-0 flex-1">
+              <span class="catTag">{{ item.product.category.name }}</span>
+              <a href="{{ item.product.get_absolute_url }}" class="mt-2 block truncate text-[15px] font-semibold text-ink transition hover:text-brand">{{ item.product.name }}</a>
+              <p class="mt-0.5 text-[13px] text-subtle">₹{{ item.product.price|floatformat:0|intcomma }} each</p>
             </div>
-            <div class="flex flex-wrap items-center gap-4">
-              <form method="post" action="{% url 'update_cart' item.product.pk %}" class="flex items-center gap-2">
-                {% csrf_token %}
-                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" inputmode="numeric" class="w-16 rounded-lg border border-hair px-2 py-1.5 text-center text-[14px] text-ink outline-none focus:border-brand">
-                <button type="submit" class="navLink">Update</button>
-              </form>
-              <p class="w-24 text-right text-[15px] font-semibold text-ink">₹{{ item.line_total|floatformat:0|intcomma }}</p>
-              <form method="post" action="{% url 'remove_from_cart' item.product.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="navLink text-[#c7262c]">Remove</button>
-              </form>
+            <div class="flex items-center justify-between gap-4 sm:justify-end">
+              <div class="flex items-center rounded-full border border-hair bg-white">
+                <button type="button" data-step="-1" data-url="{% url 'update_cart' item.product.pk %}" class="flex h-9 w-9 items-center justify-center rounded-full text-[18px] leading-none text-ink transition hover:bg-page disabled:opacity-40" aria-label="Decrease quantity">&minus;</button>
+                <span data-quantity class="w-8 text-center text-[14px] font-medium text-ink">{{ item.quantity }}</span>
+                <button type="button" data-step="1" data-url="{% url 'update_cart' item.product.pk %}" class="flex h-9 w-9 items-center justify-center rounded-full text-[18px] leading-none text-ink transition hover:bg-page disabled:opacity-40" aria-label="Increase quantity">+</button>
+              </div>
+              <p data-line-total class="w-24 text-right text-[15px] font-semibold text-ink">₹{{ item.line_total|floatformat:0|intcomma }}</p>
+              <button type="button" data-remove data-url="{% url 'remove_from_cart' item.product.pk %}" class="rounded-full px-2 py-1 text-[13px] font-medium text-[#c7262c] transition hover:bg-[#fff5f5]">Remove</button>
             </div>
           </div>
         {% endfor %}
       </div>
 
-      <aside class="card h-fit p-6 sm:p-7">
+      <aside class="card h-fit p-6 sm:p-7 lg:sticky lg:top-16">
         <h2 class="text-[18px] font-semibold text-ink">Order summary</h2>
         <dl class="mt-4 divide-y divide-black/[0.08]">
-          <div class="flex items-center justify-between py-3">
-            <dt class="text-[14px] text-subtle">Subtotal</dt>
-            <dd class="text-[14px] text-ink">₹{{ total|floatformat:0|intcomma }}</dd>
+          <div class="flex items-center justify-between gap-4 py-3">
+            <dt class="text-[13px] text-subtle">Subtotal</dt>
+            <dd class="text-[14px] text-ink" data-cart-total>₹{{ total|floatformat:0|intcomma }}</dd>
           </div>
-          <div class="flex items-center justify-between py-3">
-            <dt class="text-[14px] text-subtle">Delivery</dt>
+          <div class="flex items-center justify-between gap-4 py-3">
+            <dt class="text-[13px] text-subtle">Delivery</dt>
             <dd class="text-[14px] text-ink">Free</dd>
           </div>
-          <div class="flex items-center justify-between py-3">
+          <div class="flex items-center justify-between gap-4 py-3">
             <dt class="text-[15px] font-semibold text-ink">Total</dt>
-            <dd class="text-[18px] font-semibold text-ink">₹{{ total|floatformat:0|intcomma }}</dd>
+            <dd class="text-[20px] font-semibold text-ink" data-cart-total>₹{{ total|floatformat:0|intcomma }}</dd>
           </div>
         </dl>
         <a href="{% url 'checkout' %}" class="btnPrimary mt-5 w-full">Checkout</a>
-        <a href="{% url 'index' %}" class="btnNeutral mt-3 w-full">Continue shopping</a>
+        <a href="{% url 'index' %}#lineup" class="btnNeutral mt-3 w-full">Continue shopping</a>
       </aside>
     </div>
   {% else %}
     <div class="card mt-8 flex flex-col items-center justify-center px-5 py-14 text-center sm:px-6 sm:py-16">
       <h3 class="text-[19px] font-semibold text-ink sm:text-[21px]">Your bag is empty</h3>
       <p class="mt-2 text-[14px] text-subtle sm:text-[15px]">Add something from the lineup to get started.</p>
-      <a href="{% url 'index' %}" class="btnPrimary mt-6">Browse the store</a>
+      <a href="{% url 'index' %}#lineup" class="btnPrimary mt-6">Browse the store</a>
     </div>
   {% endif %}
 </section>
+
+<script>
+  (function () {
+    var CSRF = '{{ csrf_token }}';
+    var itemsRoot = document.querySelector('[data-cart-items]') || document;
+
+    function paint(state) {
+      if (state.count === 0) { window.location.reload(); return; }
+      Object.keys(state.items).forEach(function (id) {
+        var row = document.querySelector('[data-item="' + id + '"]');
+        if (!row) return;
+        var info = state.items[id];
+        var q = row.querySelector('[data-quantity]');
+        var line = row.querySelector('[data-line-total]');
+        if (q) q.textContent = state.items[id].quantity;
+        if (row.querySelector('[data-quantity]')) row.querySelector('[data-quantity]').textContent = state.items[id].quantity;
+        if (state.items[id].line_total_display) {
+          var lt = row.querySelector('[data-line-total]');
+          if (lt) lt.textContent = state.items[id].line_total_display;
+        }
+      });
+      document.querySelectorAll('[data-cart-total]').forEach(function (el) { el.textContent = state.total_display; });
+      var summary = document.querySelector('[data-cart-summary]');
+      if (summary) { summary.textContent = state.count + ' item' + (state.count === 1 ? '' : 's') + ' ready for checkout.'; }
+      document.querySelectorAll('[data-cart-count]').forEach(function (badge) {
+        badge.textContent = state.count;
+        if (state.count > 0) { badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+      });
+    }
+
+    function post(url, qty) {
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': CSRF,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'quantity=' + encodeURIComponent(qty)
+      }).then(function (res) { return res.ok ? res.json() : null; });
+    }
+
+    document.addEventListener('click', function (event) {
+      var step = event.target.closest('[data-step]');
+      var remove = event.target.closest('[data-remove]');
+
+      if (step) {
+        var row = step.closest('[data-item]');
+        var qtyEl = row.querySelector('[data-quantity]');
+        var next = parseInt(qtyEl.textContent, 10) + parseInt(step.dataset.step, 10);
+        if (next < 1) { next = 1; }
+        qtyEl.textContent = next;
+        step.disabled = true;
+        post(step.dataset.url, next).then(function (state) {
+          if (state) { paint(state); }
+          step.disabled = false;
+        });
+      }
+
+      if (remove) {
+        remove.disabled = true;
+        post(remove.dataset.url, 0).then(function (state) {
+          if (state) { paint(state); }
+          remove.disabled = false;
+        });
+      }
+    });
+  })();
+</script>
 {% endblock %}

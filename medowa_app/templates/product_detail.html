@@ -8,16 +8,16 @@
   <nav class="scrollbar-none flex items-center gap-2 overflow-x-auto whitespace-nowrap text-[12px] text-subtle">
     <a href="{% url 'index' %}" class="shrink-0 transition hover:text-ink">Store</a>
     <span class="shrink-0">&rsaquo;</span>
-    <a href="{% url 'index' %}?category={{ product.category.slug }}" class="shrink-0 transition hover:text-ink">{{ product.category.name }}</a>
+    <a href="{% url 'index' %}?category={{ product.category.slug }}#lineup" class="shrink-0 transition hover:text-ink">{{ product.category.name }}</a>
     <span class="shrink-0">&rsaquo;</span>
     <span class="shrink-0 text-ink">{{ product.name }}</span>
   </nav>
 </section>
 
 <section class="mx-auto grid w-full max-w-[1024px] grid-cols-1 gap-8 px-4 pb-14 pt-6 sm:px-5 sm:pt-8 lg:grid-cols-2 lg:gap-14">
-  <div class="card overflow-hidden lg:sticky lg:top-16 lg:self-start">
-    <div class="flex aspect-square w-full items-center justify-center bg-white p-6 sm:p-10">
-      <img src="{{ product.image_url }}" alt="{{ product.name }}" class="h-full w-full object-contain">
+  <div class="card group overflow-hidden lg:sticky lg:top-16 lg:self-start">
+    <div class="flex aspect-square w-full items-center justify-center overflow-hidden bg-white p-6 sm:p-10">
+      <img src="{{ product.image_url }}" alt="{{ product.name }}" class="riseIn h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]">
     </div>
   </div>
 
@@ -50,13 +50,22 @@
       </div>
     </dl>
 
-    <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-      <form method="post" action="{% url 'add_to_cart' product.pk %}" class="w-full sm:w-auto">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ product.get_absolute_url }}">
-        <button type="submit" class="btnPrimary w-full">Add to Bag</button>
-      </form>
-      <a href="{% url 'index' %}?category={{ product.category.slug }}" class="btnNeutral w-full sm:w-auto">Back to {{ product.category.name }}</a>
+    <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+      {% if user.is_staff %}
+        <div class="flex w-full items-center gap-3 rounded-2xl border border-brand/25 bg-brand/5 px-5 py-4 text-[13.5px] text-ink sm:w-auto">
+          <span>You are in an admin account — buying is disabled.</span>
+          <a href="{% url 'dashboard_home' %}" class="shrink-0 font-medium text-brand hover:underline">Dashboard &rsaquo;</a>
+        </div>
+      {% elif user.is_authenticated %}
+        <form method="post" action="{% url 'add_to_cart' product.pk %}" class="w-full sm:w-auto">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ product.get_absolute_url }}">
+          <button type="submit" class="btnPrimary w-full">Add to Bag</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}?next={{ product.get_absolute_url|urlencode }}" class="btnPrimary w-full text-center sm:w-auto">Sign in to buy</a>
+      {% endif %}
+      <a href="{% url 'index' %}?category={{ product.category.slug }}#lineup" class="btnNeutral w-full sm:w-auto">Back to {{ product.category.name }}</a>
     </div>
 
     <div class="mt-7 grid gap-3 text-[13px] text-subtle sm:grid-cols-2 sm:text-[14px]">
@@ -72,9 +81,9 @@
       <h2 class="sectionTitle">More from {{ product.category.name }}</h2>
       <div class="mt-8 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
         {% for item in related_products %}
-          <a href="{{ item.get_absolute_url }}" class="card cardLift flex h-full flex-col overflow-hidden">
-            <div class="flex aspect-square w-full items-center justify-center bg-white p-4 sm:p-6">
-              <img src="{{ item.image_url }}" alt="{{ item.name }}" loading="lazy" class="h-full w-full object-contain">
+          <a href="{{ item.get_absolute_url }}" class="card cardLift group flex h-full flex-col overflow-hidden">
+            <div class="flex aspect-square w-full items-center justify-center overflow-hidden bg-white p-4 sm:p-6">
+              <img src="{{ item.image_url }}" alt="{{ item.name }}" loading="lazy" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
             </div>
             <div class="flex flex-1 flex-col border-t border-black/[0.06] px-3.5 py-4 sm:px-5 sm:py-5">
               <h3 class="line-clamp-2 text-[13px] font-semibold leading-snug text-ink sm:text-[15px]">{{ item.name }}</h3>

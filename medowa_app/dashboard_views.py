@@ -32,8 +32,9 @@ def _next(request, fallback):
 
 
 @staff_required
-def _placeholder_noop():
-    pass
+def home(request):
+    orders = Order.objects.all()
+    revenue = orders.exclude(status='cancelled').aggregate(total=Sum('total'))['total'] or 0
     context = {
         'dash_section': 'home',
         'stats': [
@@ -282,8 +283,8 @@ def order_update_status(request, pk):
 
 @staff_required
 def user_list(request):
-    users = User.objects.annotate(order_total=Count('orders')).order_by('-date_joined')
+    accounts = User.objects.annotate(order_count=Count('orders')).order_by('-date_joined')
     return render(request, 'dashboard/user_list.html', {
         'dash_section': 'users',
-        'users': users,
+        'accounts': accounts,
     })
