@@ -88,7 +88,7 @@ class ProductDetailViewTests(StoreFixturesMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'product_detail.html')
         self.assertEqual(response.context['product'], self.macbook)
-        self.assertContains(response, '99900')
+        self.assertContains(response, '99,900')
 
     def test_detail_hides_inactive_products(self):
         response = self.client.get(reverse('product_detail', args=[self.hidden_product.pk]))
@@ -126,7 +126,7 @@ class AuthFlowTests(StoreFixturesMixin, TestCase):
             'password2': 'S3cureStorePass!',
         })
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'email', 'An account with this email already exists.')
+        self.assertFormError(response.context['form'], 'email', 'An account with this email already exists.')
 
     def test_login_and_profile_round_trip(self):
         User.objects.create_user('applefan', 'fan@example.com', 'S3cureStorePass!')
@@ -149,7 +149,7 @@ class AuthFlowTests(StoreFixturesMixin, TestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context['user'].is_authenticated)
-        self.assertFormError(response, 'form', None, 'Please enter a correct username and password. Note that both fields may be case-sensitive.')
+        self.assertFormError(response.context['form'], None, 'Please enter a correct username and password. Note that both fields may be case-sensitive.')
 
     def test_logout_is_post_only_and_clears_session(self):
         User.objects.create_user('applefan', 'fan@example.com', 'S3cureStorePass!')

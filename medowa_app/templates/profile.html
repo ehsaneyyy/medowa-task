@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Your profile — Medowa Store{% endblock %}
+
+{% block content %}
+<section class="relative overflow-hidden">
+  <div class="pointer-events-none absolute -left-32 -top-24 h-[380px] w-[380px] rounded-full bg-indigo-600/15 blur-[140px]"></div>
+  <div class="pointer-events-none absolute -right-24 top-40 h-[320px] w-[320px] rounded-full bg-blue-600/15 blur-[140px]"></div>
+
+  <div class="mx-auto w-full max-w-[1240px] px-5 py-12 md:py-16">
+    <div class="premiumCard relative overflow-hidden p-7 md:p-9">
+      <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-blue-600/25 via-purple-600/15 to-transparent"></div>
+      <div class="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center gap-5">
+          <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-white to-neutral-400 text-2xl font-semibold text-black shadow-xl shadow-white/10">
+            {{ initials }}
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-3">
+              <h1 class="text-3xl font-semibold tracking-tight text-white">{{ user.username }}</h1>
+              {% if user.is_staff %}
+                <span class="rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-300">Staff</span>
+              {% else %}
+                <span class="rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-300">Customer</span>
+              {% endif %}
+            </div>
+            <p class="mt-1.5 text-[15px] text-neutral-400">{{ user.email|default:"No email on file" }}</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="{% url 'index' %}" class="ctaGhost">Continue shopping</a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-[15px] font-medium text-black transition hover:bg-neutral-200 active:scale-[0.98]">Sign out</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {% for stat in stats %}
+        <div class="premiumCard p-5">
+          <p class="text-[12px] uppercase tracking-[0.16em] text-neutral-500">{{ stat.label }}</p>
+          <p class="mt-2 text-2xl font-semibold tracking-tight text-white">{{ stat.value }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div class="premiumCard p-7 md:p-8">
+        <div class="mb-6 flex items-center justify-between">
+          <h2 class="text-xl font-semibold tracking-tight text-white">Account details</h2>
+          <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-neutral-400">Live metadata</span>
+        </div>
+        <dl class="divide-y divide-white/[0.06]">
+          {% for row in metadata %}
+            <div class="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <dt class="text-[13.5px] uppercase tracking-[0.12em] text-neutral-500">{{ row.label }}</dt>
+              <dd class="text-[15px] text-white sm:text-right">{{ row.value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <div class="premiumCard p-7">
+          <h2 class="text-xl font-semibold tracking-tight text-white">Membership</h2>
+          <p class="mt-3 text-[15px] leading-relaxed text-neutral-400">
+            You have been part of Medowa for
+            <span class="font-medium text-white">{{ account_age_days }} day{{ account_age_days|pluralize }}</span>.
+            Your session is protected by Django authentication with CSRF verification on every form.
+          </p>
+          <div class="mt-5 flex flex-wrap gap-2">
+            <span class="chip chipOff">256-bit TLS</span>
+            <span class="chip chipOff">CSRF protected</span>
+            <span class="chip chipOff">Session monitored</span>
+          </div>
+        </div>
+
+        <div class="premiumCard p-7">
+          <h2 class="text-xl font-semibold tracking-tight text-white">Quick actions</h2>
+          <div class="mt-4 flex flex-col gap-3">
+            <a href="{% url 'index' %}" class="ctaGhost w-full">Browse the store</a>
+            {% if user.is_staff %}
+              <a href="/admin/" class="ctaGhost w-full">Open admin console</a>
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="ctaPrimary w-full">Sign out of Medowa</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
