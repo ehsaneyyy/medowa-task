@@ -3,12 +3,12 @@
 {% block title %}Register — Core Store{% endblock %}
 
 {% block content %}
-<section class="mx-auto w-full max-w-[1024px] px-5 py-14">
+<section class="mx-auto w-full max-w-[1024px] px-4 py-10 sm:px-5 sm:py-14">
   <div class="mx-auto w-full max-w-[460px]">
-    <h1 class="text-[32px] font-semibold tracking-tight text-ink">Create your account</h1>
+    <h1 class="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Create your account</h1>
     <p class="mt-2 text-[15px] leading-relaxed text-subtle">One account for the whole store — orders, delivery tracking and saved details.</p>
 
-    <form method="post" action="{% url 'register' %}" class="card mt-8 p-7" novalidate>
+    <form method="post" action="{% url 'register' %}" class="card mt-8 p-6 sm:p-7" novalidate>
       {% csrf_token %}
       {% if form.non_field_errors %}
         <div class="alertError">

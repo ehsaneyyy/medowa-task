@@ -7,18 +7,18 @@
 {% if banners %}
   {% with hero=banners.0 %}
     <section class="w-full border-b border-black/[0.06] bg-white">
-      <div class="mx-auto w-full max-w-[1024px] px-5 pb-6 pt-14 text-center md:pt-20">
+      <div class="mx-auto w-full max-w-[1024px] px-4 pb-6 pt-10 text-center sm:px-5 sm:pt-14 md:pt-20">
         <p class="eyebrow">Now available</p>
-        <h1 class="mt-4 text-[40px] font-semibold leading-[1.05] tracking-tight text-ink md:text-[64px]">{{ hero.title }}</h1>
-        <p class="mx-auto mt-4 max-w-2xl text-[17px] leading-relaxed text-subtle md:text-[21px]">{{ hero.subtitle }}</p>
-        <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <a href="{{ hero.link_url }}" class="btnPrimary">Buy now</a>
-          <a href="{% url 'index' %}" class="link text-[15px]">Learn more &rsaquo;</a>
+        <h1 class="mx-auto mt-4 max-w-[16ch] break-words text-[32px] font-semibold leading-[1.06] tracking-tight text-ink sm:max-w-none sm:text-[44px] md:text-[56px] lg:text-[64px]">{{ hero.title }}</h1>
+        <p class="mx-auto mt-4 max-w-2xl text-[16px] leading-relaxed text-subtle sm:text-[19px] md:text-[21px]">{{ hero.subtitle }}</p>
+        <div class="mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+          <a href="{{ hero.link_url }}" class="btnPrimary">Add to Bag</a>
+          <a href="{% url 'index' %}" class="link py-2 text-[15px]">Learn more &rsaquo;</a>
         </div>
       </div>
-      <div class="mx-auto w-full max-w-[1240px] px-5 pb-10">
+      <div class="mx-auto w-full max-w-[1240px] px-4 pb-8 sm:px-5 sm:pb-10">
         <div class="overflow-hidden rounded-2xl bg-page">
-          <img src="{{ hero.image }}" alt="{{ hero.title }}" class="h-[280px] w-full object-cover md:h-[520px]">
+          <img src="{{ hero.image }}" alt="{{ hero.title }}" class="h-[220px] w-full object-cover sm:h-[320px] md:h-[440px] lg:h-[520px]">
         </div>
       </div>
     </section>
@@ -26,24 +26,24 @@
 {% endif %}
 
 {% if banners|length > 1 %}
-  <section class="mx-auto grid w-full max-w-[1024px] gap-5 px-5 py-10 md:grid-cols-2">
+  <section class="mx-auto grid w-full max-w-[1024px] gap-4 px-4 py-8 sm:gap-5 sm:px-5 sm:py-10 md:grid-cols-2">
     {% for banner in banners|slice:"1:3" %}
       <article class="card cardLift flex flex-col overflow-hidden">
-        <div class="flex flex-1 flex-col items-center px-7 pt-9 text-center">
-          <h2 class="text-[24px] font-semibold tracking-tight text-ink md:text-[28px]">{{ banner.title }}</h2>
-          <p class="mt-2 text-[15px] leading-relaxed text-subtle">{{ banner.subtitle }}</p>
+        <div class="flex flex-1 flex-col items-center px-6 pt-8 text-center sm:px-7 sm:pt-9">
+          <h2 class="text-[22px] font-semibold tracking-tight text-ink sm:text-[24px] md:text-[28px]">{{ banner.title }}</h2>
+          <p class="mt-2 text-[14px] leading-relaxed text-subtle sm:text-[15px]">{{ banner.subtitle }}</p>
           <a href="{{ banner.link_url }}" class="link mt-4 text-[15px]">Shop now &rsaquo;</a>
         </div>
         <div class="mt-7 px-6 pb-0">
-          <img src="{{ banner.image }}" alt="{{ banner.title }}" class="h-[200px] w-full rounded-t-2xl bg-page object-cover">
+          <img src="{{ banner.image }}" alt="{{ banner.title }}" class="h-[180px] w-full rounded-t-2xl bg-page object-cover sm:h-[200px]">
         </div>
       </article>
     {% endfor %}
   </section>
 {% endif %}
 
-<section class="mx-auto w-full max-w-[1024px] px-5 py-8">
-  <div class="flex flex-col gap-5 border-b border-black/[0.08] pb-6 md:flex-row md:items-end md:justify-between">
+<section class="mx-auto w-full max-w-[1024px] px-4 py-8 sm:px-5">
+  <div class="flex flex-col gap-4 border-b border-black/[0.08] pb-6 sm:gap-5 md:flex-row md:items-end md:justify-between">
     <div>
       <h2 class="sectionTitle">{% if active_category %}{{ active_category|title }}{% else %}The latest{% endif %}</h2>
       <p class="mt-2 text-[15px] text-subtle">{% if active_category %}Everything in {{ active_category|title }}.{% else %}Take your pick from the new lineup.{% endif %}</p>
@@ -57,44 +57,44 @@
   </div>
 
   {% if products %}
-    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div class="mt-8 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
       {% for product in products %}
-        <a href="{{ product.get_absolute_url }}" class="card cardLift group flex flex-col overflow-hidden">
-          <div class="flex aspect-square items-center justify-center bg-white p-6">
+        <a href="{{ product.get_absolute_url }}" class="card cardLift group flex h-full flex-col overflow-hidden">
+          <div class="flex aspect-square w-full items-center justify-center bg-white p-4 sm:p-6">
             <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" class="h-full w-full object-contain">
           </div>
-          <div class="border-t border-black/[0.06] px-5 py-5">
-            <p class="text-[11px] font-medium uppercase tracking-[0.14em] text-subtle">{{ product.category.name }}</p>
-            <h3 class="mt-2 text-[15px] font-semibold leading-snug text-ink">{{ product.name }}</h3>
-            <p class="mt-2 text-[14px] text-subtle">From ₹{{ product.price|floatformat:0|intcomma }}</p>
+          <div class="flex flex-1 flex-col border-t border-black/[0.06] px-3.5 py-4 sm:px-5 sm:py-5">
+            <p class="text-[10px] font-medium uppercase tracking-[0.14em] text-subtle sm:text-[11px]">{{ product.category.name }}</p>
+            <h3 class="mt-1.5 line-clamp-2 text-[13px] font-semibold leading-snug text-ink sm:mt-2 sm:text-[15px]">{{ product.name }}</h3>
+            <p class="mt-2 text-[13px] text-subtle sm:text-[14px]">From ₹{{ product.price|floatformat:0|intcomma }}</p>
           </div>
         </a>
       {% endfor %}
     </div>
   {% else %}
-    <div class="card mt-8 flex flex-col items-center justify-center px-6 py-16 text-center">
-      <h3 class="text-[21px] font-semibold text-ink">No products in this collection</h3>
-      <p class="mt-2 text-[15px] text-subtle">Browse the full store to see the complete lineup.</p>
+    <div class="card mt-8 flex flex-col items-center justify-center px-5 py-14 text-center sm:px-6 sm:py-16">
+      <h3 class="text-[19px] font-semibold text-ink sm:text-[21px]">No products in this collection</h3>
+      <p class="mt-2 text-[14px] text-subtle sm:text-[15px]">Browse the full store to see the complete lineup.</p>
       <a href="{% url 'index' %}" class="btnPrimary mt-6">Back to Store</a>
     </div>
   {% endif %}
 </section>
 
-<section class="mx-auto w-full max-w-[1024px] px-5 pb-16">
-  <div class="grid gap-5 md:grid-cols-3">
-    <div class="card p-7">
+<section class="mx-auto w-full max-w-[1024px] px-4 pb-16 sm:px-5">
+  <div class="grid gap-4 sm:gap-5 md:grid-cols-3">
+    <div class="card p-6 sm:p-7">
       <p class="eyebrow">Delivery</p>
-      <p class="mt-3 text-[17px] font-semibold text-ink">Free next-day shipping</p>
+      <p class="mt-3 text-[16px] font-semibold text-ink sm:text-[17px]">Free next-day shipping</p>
       <p class="mt-2 text-[14px] leading-relaxed text-subtle">On every order across metro India, with tracking from dispatch to doorstep.</p>
     </div>
-    <div class="card p-7">
+    <div class="card p-6 sm:p-7">
       <p class="eyebrow">Trade In</p>
-      <p class="mt-3 text-[17px] font-semibold text-ink">Upgrade for less</p>
+      <p class="mt-3 text-[16px] font-semibold text-ink sm:text-[17px]">Upgrade for less</p>
       <p class="mt-2 text-[14px] leading-relaxed text-subtle">Credit your current device toward anything in the store and recycle it responsibly.</p>
     </div>
-    <div class="card p-7">
+    <div class="card p-6 sm:p-7">
       <p class="eyebrow">Specialist</p>
-      <p class="mt-3 text-[17px] font-semibold text-ink">Talk to a human</p>
+      <p class="mt-3 text-[16px] font-semibold text-ink sm:text-[17px]">Talk to a human</p>
       <p class="mt-2 text-[14px] leading-relaxed text-subtle">Chat with a product specialist before you buy, or get setup help after checkout.</p>
     </div>
   </div>

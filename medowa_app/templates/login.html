@@ -3,12 +3,12 @@
 {% block title %}Login — Core Store{% endblock %}
 
 {% block content %}
-<section class="mx-auto w-full max-w-[1024px] px-5 py-14">
+<section class="mx-auto w-full max-w-[1024px] px-4 py-10 sm:px-5 sm:py-14">
   <div class="mx-auto w-full max-w-[460px]">
-    <h1 class="text-[32px] font-semibold tracking-tight text-ink">Sign in</h1>
+    <h1 class="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Sign in</h1>
     <p class="mt-2 text-[15px] leading-relaxed text-subtle">Use your Core Store account to view your profile dashboard and account statistics.</p>
 
-    <form method="post" action="{% url 'login' %}" class="card mt-8 p-7" novalidate>
+    <form method="post" action="{% url 'login' %}" class="card mt-8 p-6 sm:p-7" novalidate>
       {% csrf_token %}
       {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
       {% if form.non_field_errors %}
@@ -30,13 +30,31 @@
       </p>
     </form>
 
-    <div class="mt-6 rounded-2xl border border-black/[0.06] bg-white p-5">
-      <p class="text-[13px] font-semibold text-ink">Test credentials</p>
-      <div class="mt-3 space-y-2 text-[13px] text-subtle">
-        <p>Customer dashboard — <span class="text-ink">testuser</span> / <span class="text-ink">TestPass123!</span></p>
-        <p>Admin console — <span class="text-ink">admin</span> / <span class="text-ink">Admin@12345</span></p>
+    <div class="mt-6 rounded-2xl border border-black/[0.08] bg-white p-5">
+      <p class="text-[13px] font-semibold text-ink">Testing credentials</p>
+      <p class="mt-1 text-[12.5px] leading-relaxed text-subtle">Sign in with either account during review.</p>
+      <div class="mt-4 space-y-3">
+        <div class="flex flex-col gap-1 rounded-xl bg-page px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-[12.5px] font-medium text-ink">Customer dashboard</p>
+            <p class="text-[11.5px] text-subtle">Profile metrics and account statistics</p>
+          </div>
+          <div class="font-mono text-[12.5px] text-ink sm:text-right">
+            <p>testuser</p>
+            <p>TestPass123!</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1 rounded-xl bg-page px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-[12.5px] font-medium text-ink">Admin console</p>
+            <p class="text-[11.5px] text-subtle">Store management at /admin/</p>
+          </div>
+          <div class="font-mono text-[12.5px] text-ink sm:text-right">
+            <p>admin</p>
+            <p>Admin@12345</p>
+          </div>
+        </div>
       </div>
-      <p class="mt-3 text-[12px] text-subtle">The admin console is served at <a href="/admin/" class="link">/admin/</a>.</p>
     </div>
   </div>
 </section>

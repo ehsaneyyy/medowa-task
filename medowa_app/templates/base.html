@@ -144,59 +144,36 @@
 </head>
 <body class="flex min-h-screen flex-col bg-page font-display text-ink">
   <header class="navBar sticky top-0 z-40">
-    <div class="mx-auto flex h-12 w-full max-w-[1024px] items-center justify-between px-5">
-      <div class="flex items-center gap-6">
-        <a href="{% url 'index' %}" class="flex items-center gap-2" aria-label="Core Store home">
-          <span class="flex h-6 w-6 items-center justify-center rounded-md bg-ink">
-            <span class="h-2.5 w-2.5 rounded-sm border-2 border-white"></span>
-          </span>
-          <span class="text-[15px] font-semibold tracking-tight text-ink">Core Store</span>
-        </a>
-        <nav class="hidden items-center gap-1 md:flex">
-          <a href="{% url 'index' %}" class="navLink {% if not active_category %}navLinkActive{% endif %}">Store</a>
-          <a href="{% url 'index' %}?category=mac" class="navLink {% if active_category == 'mac' %}navLinkActive{% endif %}">Mac</a>
-          <a href="{% url 'index' %}?category=iphone" class="navLink {% if active_category == 'iphone' %}navLinkActive{% endif %}">iPhone</a>
-          <a href="{% url 'index' %}?category=ipad" class="navLink {% if active_category == 'ipad' %}navLinkActive{% endif %}">iPad</a>
-          <a href="{% url 'index' %}?category=watch" class="navLink {% if active_category == 'watch' %}navLinkActive{% endif %}">Watch</a>
-        </nav>
-      </div>
-      <div class="flex items-center gap-1.5">
+    <div class="mx-auto flex h-12 w-full max-w-[1024px] items-center gap-2 px-3 sm:gap-3 sm:px-5">
+      <a href="{% url 'index' %}" class="flex shrink-0 items-center gap-2" aria-label="Core Store home">
+        <span class="flex h-6 w-6 items-center justify-center rounded-md bg-ink">
+          <span class="h-2.5 w-2.5 rounded-sm border-2 border-white"></span>
+        </span>
+        <span class="text-[14px] font-semibold tracking-tight text-ink sm:text-[15px]">Core Store</span>
+      </a>
+
+      <nav class="scrollbar-none -mx-1 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto whitespace-nowrap px-1 sm:gap-1">
+        <a href="{% url 'index' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'index' and not active_category %}navLinkActive{% endif %}">Store</a>
+        <a href="{% url 'index' %}?category=mac" class="navLink shrink-0 {% if active_category == 'mac' %}navLinkActive{% endif %}">Mac</a>
+        <a href="{% url 'index' %}?category=iphone" class="navLink shrink-0 {% if active_category == 'iphone' %}navLinkActive{% endif %}">iPhone</a>
+        <a href="{% url 'index' %}?category=ipad" class="navLink shrink-0 {% if active_category == 'ipad' %}navLinkActive{% endif %}">iPad</a>
+        <a href="{% url 'index' %}?category=watch" class="navLink shrink-0 {% if active_category == 'watch' %}navLinkActive{% endif %}">Watch</a>
         {% if user.is_authenticated %}
-          <a href="{% url 'profile' %}" class="navLink hidden sm:inline-flex">Profile</a>
-          <form method="post" action="{% url 'logout' %}" class="hidden sm:block">
+          <span class="mx-1 h-4 w-px shrink-0 bg-black/10"></span>
+          <a href="{% url 'profile' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'profile' %}navLinkActive{% endif %}">Profile</a>
+        {% endif %}
+      </nav>
+
+      <div class="flex shrink-0 items-center gap-1">
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit" class="navLink">Logout</button>
           </form>
-          <a href="{% url 'profile' %}" class="navLink md:hidden">{{ user.username|slice:":2"|upper }}</a>
         {% else %}
-          <a href="{% url 'login' %}" class="navLink">Login</a>
-          <a href="{% url 'register' %}" class="navLink">Register</a>
+          <a href="{% url 'login' %}" class="navLink {% if request.resolver_match.url_name == 'login' %}navLinkActive{% endif %}">Login</a>
+          <a href="{% url 'register' %}" class="hidden shrink-0 rounded-full bg-ink px-3 py-1.5 text-[12px] text-white transition hover:bg-black sm:inline-flex {% if request.resolver_match.url_name == 'register' %}ring-1 ring-ink{% endif %}">Register</a>
         {% endif %}
-        <details class="relative md:hidden">
-          <summary class="flex h-7 w-7 cursor-pointer list-none items-center justify-center rounded-full text-ink transition hover:bg-black/[0.05] [&::-webkit-details-marker]:hidden">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="h-4 w-4">
-              <path d="M4 7h16M4 12h16M4 17h16"/>
-            </svg>
-          </summary>
-          <div class="absolute right-0 top-10 w-56 rounded-2xl border border-black/[0.08] bg-white p-2 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
-            <a href="{% url 'index' %}" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">Store</a>
-            <a href="{% url 'index' %}?category=mac" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">Mac</a>
-            <a href="{% url 'index' %}?category=iphone" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">iPhone</a>
-            <a href="{% url 'index' %}?category=ipad" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">iPad</a>
-            <a href="{% url 'index' %}?category=watch" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">Watch</a>
-            <div class="my-1.5 h-px bg-black/[0.08]"></div>
-            {% if user.is_authenticated %}
-              <a href="{% url 'profile' %}" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">Profile</a>
-              <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="w-full rounded-xl px-3 py-2 text-left text-[14px] text-ink hover:bg-page">Logout</button>
-              </form>
-            {% else %}
-              <a href="{% url 'login' %}" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">Login</a>
-              <a href="{% url 'register' %}" class="block rounded-xl px-3 py-2 text-[14px] text-ink hover:bg-page">Register</a>
-            {% endif %}
-          </div>
-        </details>
       </div>
     </div>
   </header>
@@ -216,8 +193,8 @@
   </main>
 
   <footer class="border-t border-black/[0.08] bg-page">
-    <div class="mx-auto w-full max-w-[1024px] px-5 py-12">
-      <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+    <div class="mx-auto w-full max-w-[1024px] px-4 py-12 sm:px-5">
+      <div class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
         <div>
           <p class="footerHead">Shop</p>
           <a href="{% url 'index' %}" class="footerLink">Store</a>
@@ -250,7 +227,7 @@
       </div>
       <div class="mt-10 flex flex-col gap-3 border-t border-black/[0.08] pt-5 text-[12px] text-subtle md:flex-row md:items-center md:justify-between">
         <p>Copyright &copy; 2026 Core Store. All rights reserved.</p>
-        <div class="flex items-center gap-5">
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
           <span>India</span>
           <span>Privacy Policy</span>
           <span>Terms of Use</span>
