@@ -131,7 +131,7 @@ def serialize_product(product):
         'name': product.name,
         'description': product.description,
         'price': str(product.price),
-        'image': product.image,
+        'image': product.image_url,
         'category': {
             'id': product.category.pk,
             'name': product.category.name,
@@ -156,7 +156,7 @@ def serialize_banner(banner):
         'id': banner.pk,
         'title': banner.title,
         'subtitle': banner.subtitle,
-        'image': banner.image,
+        'image': banner.image_url,
         'link_url': banner.link_url,
     }
 

@@ -1,9 +1,14 @@
+import io
+import shutil
+import tempfile
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 
 from .credentials import (
     ADMIN_PASSWORD,
@@ -327,3 +332,38 @@ class ApiEndpointTests(StoreFixturesMixin, TestCase):
         self.assertEqual(reverse('api_product_detail', args=[1]), '/api/products/1/')
         self.assertEqual(reverse('api_categories'), '/api/categories/')
         self.assertEqual(reverse('api_banners'), '/api/banners/')
+
+
+class ProductImageUploadTests(StoreFixturesMixin, TestCase):
+
+    def setUp(self):
+        self.temp_media = tempfile.mkdtemp()
+        self.media_override = override_settings(MEDIA_ROOT=self.temp_media)
+        self.media_override.enable()
+        self.addCleanup(self.media_override.disable)
+        self.addCleanup(shutil.rmtree, self.temp_media, ignore_errors=True)
+
+    def _png(self):
+        buffer = io.BytesIO()
+        Image.new('RGB', (2, 2), 'white').save(buffer, format='PNG')
+        return buffer.getvalue()
+
+    def test_image_url_falls_back_to_external_url(self):
+        self.assertEqual(self.macbook.image_url, 'https://example.com/macbook.jpg')
+
+    def test_uploaded_file_takes_precedence_over_url(self):
+        self.macbook.image_file = SimpleUploadedFile(
+            'macbook.png', self._png(), content_type='image/png'
+        )
+        self.macbook.save()
+        self.macbook.refresh_from_db()
+        self.assertIn('/media/products/', self.macbook.image_url)
+        self.assertTrue(self.macbook.image_url.endswith('.png'))
+
+    def test_api_serializes_uploaded_image_url(self):
+        self.macbook.image_file = SimpleUploadedFile(
+            'macbook.png', self._png(), content_type='image/png'
+        )
+        self.macbook.save()
+        response = self.client.get(reverse('api_product_detail', args=[self.macbook.pk]))
+        self.assertIn('/media/products/', response.json()['image'])
