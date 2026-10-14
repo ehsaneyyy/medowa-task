@@ -57,7 +57,7 @@ def register_user(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Welcome to Core Store, %s. Your account is ready.' % user.username)
+            messages.success(request, 'Welcome to medowa-task, %s. Your account is ready.' % user.username)
             return redirect('index')
     else:
         form = RegisterForm()

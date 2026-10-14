@@ -1,4 +1,4 @@
-const API_BASE = (document.querySelector('meta[name="core-store-api"]')?.content || window.location.origin).replace(/\/+$/, '');
+const API_BASE = (document.querySelector('meta[name="medowa-task-api"]')?.content || window.location.origin).replace(/\/+$/, '');
 
 const money = new Intl.NumberFormat('en-IN', {
   style: 'currency',

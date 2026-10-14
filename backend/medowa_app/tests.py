@@ -122,7 +122,7 @@ class AuthFlowTests(StoreFixturesMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(User.objects.filter(username='applefan').exists())
         self.assertTrue(response.context['user'].is_authenticated)
-        self.assertContains(response, 'Welcome to Core Store')
+        self.assertContains(response, 'Welcome to medowa-task')
 
     def test_register_rejects_duplicate_email(self):
         User.objects.create_user('existing', 'used@example.com', 'pass12345A!')
@@ -210,7 +210,7 @@ class BrandingTests(StoreFixturesMixin, TestCase):
         for name, args in (('index', []), ('register', []), ('login', [])):
             response = self.client.get(reverse(name, args=args))
             self.assertEqual(response.status_code, 200)
-            self.assertContains(response, 'Core Store')
+            self.assertContains(response, 'medowa-task')
 
     def test_storefront_pages_drop_legacy_branding(self):
         for name, args in (('index', []), ('register', []), ('login', [])):
@@ -319,7 +319,7 @@ class ApiEndpointTests(StoreFixturesMixin, TestCase):
         self.assertEqual(data['results'][0]['title'], 'iPhone 18 Pro')
 
     def test_api_allows_cross_origin_requests(self):
-        response = self.client.get(reverse('api_products'), HTTP_ORIGIN='https://core-store.vercel.app')
+        response = self.client.get(reverse('api_products'), HTTP_ORIGIN='https://medowa-task.vercel.app')
         self.assertEqual(response['Access-Control-Allow-Origin'], '*')
 
     def test_api_routes_resolve(self):

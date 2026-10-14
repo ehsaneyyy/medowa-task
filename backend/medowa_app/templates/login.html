@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Login — Core Store{% endblock %}
+{% block title %}Login — medowa-task{% endblock %}
 
 {% block content %}
 <section class="mx-auto w-full max-w-[1024px] px-4 py-10 sm:px-5 sm:py-14">
   <div class="mx-auto w-full max-w-[460px]">
     <h1 class="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Sign in</h1>
-    <p class="mt-2 text-[15px] leading-relaxed text-subtle">Use your Core Store account to view your profile dashboard and account statistics.</p>
+    <p class="mt-2 text-[15px] leading-relaxed text-subtle">Use your medowa-task account to view your profile dashboard and account statistics.</p>
 
     <form method="post" action="{% url 'login' %}" class="card mt-8 p-6 sm:p-7" novalidate>
       {% csrf_token %}
@@ -25,7 +25,7 @@
       {% endfor %}
       <button type="submit" class="btnPrimary w-full">Sign in</button>
       <p class="mt-5 text-center text-[14px] text-subtle">
-        New to Core Store?
+        New to medowa-task?
         <a href="{% url 'register' %}" class="link">Create an account</a>
       </p>
     </form>
