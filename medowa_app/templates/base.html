@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050506">
+  <title>{% block title %}Medowa — Premium Store{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: {
+              950: '#050506',
+              900: '#0b0b0d',
+              800: '#141416',
+              700: '#1c1d20'
+            }
+          },
+          fontFamily: {
+            display: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .fieldRow {
+        @apply mb-5;
+      }
+
+      .fieldRow label {
+        @apply mb-2 block text-[13px] font-medium text-neutral-400;
+      }
+
+      .fieldRow input,
+      .fieldRow textarea,
+      .fieldRow select {
+        @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[15px] text-white placeholder-neutral-500 outline-none transition duration-200 focus:border-blue-400/60 focus:bg-white/10 focus:ring-2 focus:ring-blue-500/20;
+      }
+
+      .fieldRow input[type="checkbox"],
+      .fieldRow input[type="radio"] {
+        @apply w-auto rounded border-white/20 bg-white/10;
+      }
+
+      ul.errorlist {
+        @apply mb-3 space-y-1;
+      }
+
+      ul.errorlist li {
+        @apply rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-[13px] text-red-300;
+      }
+
+      .formNonField {
+        @apply mb-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-[14px] text-red-300;
+      }
+
+      .premiumCard {
+        @apply rounded-3xl border border-white/[0.08] bg-ink-800 transition duration-300;
+      }
+
+      .premiumCard:hover {
+        @apply border-white/15 bg-ink-700;
+      }
+
+      .ctaPrimary {
+        @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-[15px] font-medium text-black transition duration-200 hover:bg-neutral-200 active:scale-[0.98];
+      }
+
+      .ctaGhost {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-7 py-3 text-[15px] font-medium text-white transition duration-200 hover:border-white/40 hover:bg-white/5 active:scale-[0.98];
+      }
+
+      .linkBlue {
+        @apply text-[15px] text-blue-400 transition hover:text-blue-300 hover:underline;
+      }
+
+      .navLink {
+        @apply rounded-full px-3 py-1.5 text-[13px] text-neutral-300 transition duration-200 hover:bg-white/10 hover:text-white;
+      }
+
+      .footerHead {
+        @apply mb-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-neutral-500;
+      }
+
+      .footerLink {
+        @apply mb-2.5 block text-[13px] text-neutral-400 transition hover:text-white;
+      }
+
+      .chip {
+        @apply inline-flex items-center rounded-full border px-4 py-2 text-[13px] font-medium transition duration-200;
+      }
+
+      .chipOff {
+        @apply border-white/10 bg-white/5 text-neutral-300 hover:border-white/25 hover:text-white;
+      }
+
+      .chipOn {
+        @apply border-white bg-white text-black hover:bg-neutral-200;
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="flex min-h-screen flex-col bg-ink-950 font-display text-neutral-200">
+  <header class="glassBar sticky top-0 z-40 border-b border-white/[0.08]">
+    <div class="mx-auto flex h-14 w-full max-w-[1240px] items-center justify-between px-5">
+      <div class="flex items-center gap-6">
+        <a href="{% url 'index' %}" class="group flex items-center gap-2.5">
+          <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-white to-neutral-400 text-black shadow-lg shadow-white/10 transition group-hover:shadow-white/20">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <path d="M12 3.5c2.4 1.8 5.4 2 8 1.2-1 4.6-3.2 8.4-6.4 10.6-1.6 1.1-3.4 1.7-5.2 1.9-1-.8-1.9-1.9-2.6-3.2 2.6-.4 4.7-1.6 6.2-3.4C10.2 9.4 8 7.6 5 7c2.1-1.4 4.5-2.2 7-3.5Z"/>
+            </svg>
+          </span>
+          <span class="text-[17px] font-semibold tracking-tight text-white">Medowa</span>
+        </a>
+        <nav class="hidden items-center gap-1 md:flex">
+          <a href="{% url 'index' %}" class="navLink">Store</a>
+          <a href="{% url 'index' %}?category=mac" class="navLink">Mac</a>
+          <a href="{% url 'index' %}?category=iphone" class="navLink">iPhone</a>
+          <a href="{% url 'index' %}?category=ipad" class="navLink">iPad</a>
+          <a href="{% url 'index' %}?category=watch" class="navLink">Watch</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-2">
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="navLink hidden sm:inline-flex">Account</a>
+          <form method="post" action="{% url 'logout' %}" class="hidden sm:block">
+            {% csrf_token %}
+            <button type="submit" class="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[13px] font-medium text-white transition hover:border-white/30 hover:bg-white/10">Sign out</button>
+          </form>
+          <a href="{% url 'profile' %}" class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-[12px] font-semibold text-white md:hidden">{{ user.username|slice:":2"|upper }}</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="navLink hidden sm:inline-flex">Sign in</a>
+          <a href="{% url 'register' %}" class="rounded-full bg-white px-4 py-1.5 text-[13px] font-medium text-black transition hover:bg-neutral-200">Get started</a>
+        {% endif %}
+        <details class="relative md:hidden">
+          <summary class="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-4 w-4">
+              <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
+          </summary>
+          <div class="absolute right-0 top-11 w-56 rounded-3xl border border-white/10 bg-ink-800 p-3 shadow-2xl shadow-black/60">
+            <a href="{% url 'index' %}" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">Store</a>
+            <a href="{% url 'index' %}?category=mac" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">Mac</a>
+            <a href="{% url 'index' %}?category=iphone" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">iPhone</a>
+            <a href="{% url 'index' %}?category=ipad" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">iPad</a>
+            <a href="{% url 'index' %}?category=watch" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">Watch</a>
+            <div class="my-2 h-px bg-white/10"></div>
+            {% if user.is_authenticated %}
+              <a href="{% url 'profile' %}" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">Account</a>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full rounded-2xl px-3 py-2.5 text-left text-[14px] text-neutral-200 hover:bg-white/10">Sign out</button>
+              </form>
+            {% else %}
+              <a href="{% url 'login' %}" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">Sign in</a>
+              <a href="{% url 'register' %}" class="block rounded-2xl px-3 py-2.5 text-[14px] text-neutral-200 hover:bg-white/10">Create account</a>
+            {% endif %}
+          </div>
+        </details>
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="pointer-events-none fixed right-4 top-20 z-50 w-[min(92vw,380px)] space-y-2">
+      {% for message in messages %}
+        <div class="fadeInUp pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 text-[14px] shadow-2xl shadow-black/50 backdrop-blur-xl
+          {% if message.tags == 'success' %}border-emerald-500/25 bg-emerald-500/15 text-emerald-200
+          {% elif message.tags == 'error' %}border-red-500/25 bg-red-500/15 text-red-200
+          {% elif message.tags == 'warning' %}border-amber-500/25 bg-amber-500/15 text-amber-200
+          {% else %}border-white/10 bg-white/10 text-neutral-100{% endif %}">
+          <span class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-current opacity-70"></span>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-white/[0.08] bg-ink-900">
+    <div class="mx-auto w-full max-w-[1240px] px-5 py-14">
+      <div class="grid grid-cols-2 gap-10 md:grid-cols-4">
+        <div>
+          <p class="footerHead">Shop</p>
+          <a href="{% url 'index' %}" class="footerLink">Store overview</a>
+          <a href="{% url 'index' %}?category=mac" class="footerLink">Mac</a>
+          <a href="{% url 'index' %}?category=iphone" class="footerLink">iPhone</a>
+          <a href="{% url 'index' %}?category=ipad" class="footerLink">iPad</a>
+          <a href="{% url 'index' %}?category=watch" class="footerLink">Apple Watch</a>
+        </div>
+        <div>
+          <p class="footerHead">Account</p>
+          <a href="{% url 'profile' %}" class="footerLink">Your profile</a>
+          <a href="{% url 'login' %}" class="footerLink">Sign in</a>
+          <a href="{% url 'register' %}" class="footerLink">Create account</a>
+          <a href="{% url 'index' %}" class="footerLink">Order status</a>
+        </div>
+        <div>
+          <p class="footerHead">For Business</p>
+          <a href="{% url 'index' %}" class="footerLink">Medowa at Work</a>
+          <a href="{% url 'index' %}" class="footerLink">Financing</a>
+          <a href="{% url 'index' %}" class="footerLink">Trade In</a>
+          <a href="{% url 'index' %}" class="footerLink">Volume purchase</a>
+        </div>
+        <div>
+          <p class="footerHead">About Medowa</p>
+          <a href="{% url 'index' %}" class="footerLink">Our values</a>
+          <a href="{% url 'index' %}" class="footerLink">Environment</a>
+          <a href="{% url 'index' %}" class="footerLink">Privacy policy</a>
+          <a href="{% url 'index' %}" class="footerLink">Contact</a>
+        </div>
+      </div>
+      <div class="mt-12 flex flex-col gap-3 border-t border-white/[0.08] pt-6 text-[12px] text-neutral-500 md:flex-row md:items-center md:justify-between">
+        <p>Copyright &copy; 2026 Medowa Store India. All rights reserved.</p>
+        <div class="flex items-center gap-5">
+          <span>India</span>
+          <span>Privacy</span>
+          <span>Terms of Use</span>
+          <span>Sales Policy</span>
+        </div>
+      </div>
+      <p class="mt-4 max-w-3xl text-[11px] leading-relaxed text-neutral-600">
+        Medowa is a demonstration storefront inspired by premium retail design. Product names, imagery and trademarks belong to their respective owners.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
