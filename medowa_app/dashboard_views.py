@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .forms import BannerForm, CategoryForm, ProductForm
+from .forms import BannerForm, CategoryForm, ProductForm, StaffUserForm
 from .models import Banner, Category, Order, Product
 
 
@@ -287,4 +287,70 @@ def user_list(request):
     return render(request, 'dashboard/user_list.html', {
         'dash_section': 'users',
         'accounts': accounts,
+        'staff_total': User.objects.filter(is_staff=True).count(),
+        'customer_total': User.objects.filter(is_staff=False).count(),
     })
+
+
+@staff_required
+def user_create(request):
+    if request.method == 'POST':
+        form = StaffUserForm(request.POST)
+        if form.is_valid():
+            account = form.save()
+            messages.success(request, 'User "%s" was created.' % account.username)
+            return redirect('dashboard_users')
+    else:
+        form = StaffUserForm()
+    return render(request, 'dashboard/user_form.html', {
+        'dash_section': 'users',
+        'form': form,
+        'mode': 'create',
+        'title': 'New user',
+    })
+
+
+@staff_required
+def user_edit(request, pk):
+    account = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        form = StaffUserForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'User "%s" was updated.' % account.username)
+            return redirect('dashboard_users')
+    else:
+        form = StaffUserForm(instance=account)
+    return render(request, 'dashboard/user_form.html', {
+        'dash_section': 'users',
+        'form': form,
+        'account': account,
+        'mode': 'edit',
+        'title': 'Edit user',
+    })
+
+
+@staff_required
+@require_POST
+def user_toggle(request, pk):
+    account = get_object_or_404(User, pk=pk)
+    if account == request.user:
+        messages.error(request, 'You cannot change the status of the account you are signed in with.')
+        return redirect('dashboard_users')
+    account.is_active = not account.is_active
+    account.save(update_fields=['is_active'])
+    messages.success(request, 'User "%s" is now %s.' % (account.username, 'active' if account.is_active else 'disabled'))
+    return redirect('dashboard_users')
+
+
+@staff_required
+@require_POST
+def user_delete(request, pk):
+    account = get_object_or_404(User, pk=pk)
+    if account == request.user:
+        messages.error(request, 'You cannot delete the account you are currently signed in with.')
+        return redirect('dashboard_users')
+    username = account.username
+    account.delete()
+    messages.info(request, 'User "%s" was deleted.' % username)
+    return redirect('dashboard_users')

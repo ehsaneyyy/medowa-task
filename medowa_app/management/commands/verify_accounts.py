@@ -22,8 +22,8 @@ class Command(BaseCommand):
         failures = []
         checks = []
 
-        admin_url = reverse('admin:index')
-        checks.append(('admin route resolves to /admin/', admin_url == '/admin/', admin_url))
+        dashboard_url = reverse('dashboard_home')
+        checks.append(('dashboard route resolves to /dashboard/', dashboard_url == '/dashboard/', dashboard_url))
 
         admin_account = authenticate(username=ADMIN_USERNAME, password=ADMIN_PASSWORD)
         checks.append((
@@ -77,9 +77,9 @@ class Command(BaseCommand):
                 reverse('login'),
                 {'username': ADMIN_USERNAME, 'password': ADMIN_PASSWORD},
             )
-            admin_response = admin_client.get(admin_url)
+            admin_response = admin_client.get(dashboard_url)
             checks.append((
-                'admin console serves the dashboard',
+                'admin account opens the custom dashboard',
                 admin_response.status_code == 200,
                 'HTTP %s' % admin_response.status_code,
             ))

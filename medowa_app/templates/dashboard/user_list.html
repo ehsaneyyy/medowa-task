@@ -3,21 +3,26 @@
 {% block title %}Users — medowa-task Dashboard{% endblock %}
 
 {% block content %}
-<div>
-  <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Users</h1>
-  <p class="mt-1 text-[14px] text-subtle">{{ accounts|length }} account{{ accounts|length|pluralize }} registered on medowa-task.</p>
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">Users</h1>
+    <p class="mt-1 text-[14px] text-subtle">{{ accounts|length }} account{{ accounts|length|pluralize }} — {{ staff_total }} administrator{{ staff_total|pluralize }}, {{ customer_total }} customer{{ customer_total|pluralize }}.</p>
+  </div>
+  <a href="{% url 'dashboard_user_create' %}" class="dashBtn">New user</a>
 </div>
 
 <div class="dashPanel mt-5 overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="w-full min-w-[720px] border-collapse">
+    <table class="w-full min-w-[820px] border-collapse">
       <thead class="border-b border-black/[0.06] bg-page/60">
         <tr>
           <th class="dashTh">User</th>
           <th class="dashTh">Email</th>
           <th class="dashTh">Role</th>
+          <th class="dashTh">Status</th>
           <th class="dashTh">Orders</th>
           <th class="dashTh">Joined</th>
+          <th class="dashTh text-right">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-black/[0.06]">
@@ -26,22 +31,47 @@
             <td class="dashTd">
               <div class="flex items-center gap-3">
                 <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-[12px] font-semibold text-white">{{ account.username|slice:":2"|upper }}</span>
-                <span class="font-medium">{{ account.username }}</span>
+                <div class="min-w-0">
+                  <a href="{% url 'dashboard_user_edit' account.pk %}" class="block truncate font-medium text-ink hover:text-brand">{{ account.username }}</a>
+                  {% if account.get_full_name %}<span class="block truncate text-[12px] text-subtle">{{ account.get_full_name }}</span>{% endif %}
+                </div>
               </div>
             </td>
             <td class="dashTd text-subtle">{{ account.email|default:"—" }}</td>
             <td class="dashTd">
               {% if account.is_staff %}
-                <span class="dashChip bg-brand/10 text-brand">Staff</span>
+                <span class="dashChip bg-brand/10 text-brand">Administrator</span>
               {% else %}
                 <span class="dashChip bg-page text-subtle">Customer</span>
               {% endif %}
             </td>
+            <td class="dashTd">
+              {% if account.is_active %}
+                <span class="dashChip bg-[#f2fbf5] text-[#1d7a45]">Active</span>
+              {% else %}
+                <span class="dashChip bg-[#fff5f5] text-[#c7262c]">Disabled</span>
+              {% endif %}
+            </td>
             <td class="dashTd">{{ account.order_count }}</td>
             <td class="dashTd text-subtle">{{ account.date_joined|date:"d M Y" }}</td>
+            <td class="dashTd">
+              <div class="flex items-center justify-end gap-2">
+                <form method="post" action="{% url 'dashboard_user_toggle' account.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40" {% if account == request.user %}disabled title="You cannot change your own status"{% endif %}>{% if account.is_active %}Disable{% else %}Enable{% endif %}</button>
+                </form>
+                <a href="{% url 'dashboard_user_edit' account.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
+                <form method="post" action="{% url 'dashboard_user_delete' account.pk %}" onsubmit="return confirm('Delete &quot;{{ account.username|escapejs }}&quot;? This cannot be undone.');">
+                  {% csrf_token %}
+                  <button type="submit" class="dashBtnDanger" {% if account == request.user %}disabled title="You cannot delete yourself"{% endif %}>Delete</button>
+                </form>
+              </div>
+            </td>
           </tr>
         {% empty %}
-          <tr><td colspan="5" class="px-4 py-14 text-center text-[13.5px] text-subtle">No users yet.</td></tr>
+          <tr>
+            <td colspan="7" class="px-4 py-14 text-center text-[13.5px] text-subtle">No accounts yet.</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>

@@ -1,6 +1,6 @@
 # medowa-task — Apple Store-style e-commerce (Django)
 
-A database-driven e-commerce website built with Python and Django, inspired by the concept and experience of the Apple Store. Everything on the site — products, categories, banners and orders — is managed from the Django admin panel and rendered dynamically.
+A database-driven e-commerce website built with Python and Django, inspired by the concept and experience of the Apple Store. Everything on the site — products, categories, banners and orders — is managed from a purpose-built store dashboard and rendered dynamically.
 
 ## Submission
 
@@ -12,7 +12,7 @@ A database-driven e-commerce website built with Python and Django, inspired by t
 | Test User Credentials | `testuser` / `TestPass123!` |
 | GitHub Repository | https://github.com/ehsaneyyy/medowa-task |
 
-> The store dashboard at `/dashboard/` is a purpose-built control panel (overview, products, categories, banners, orders, users). Django Admin remains available to superusers at `/admin/` as a secondary tool.
+> The store dashboard at `/dashboard/` is a purpose-built control panel covering overview, products, categories, banners, orders and users (including creating, editing, disabling and deleting accounts). There is no dependency on the default Django admin.
 
 ## Technologies Used
 
@@ -37,7 +37,7 @@ A database-driven e-commerce website built with Python and Django, inspired by t
    An **admin dashboard** (staff-only, `/dashboard/`) provides a purpose-built overview with live stats plus full product, category, banner, order and user management.
 4. **Product Details** — each product has its own page showing image, name, description, price, category and related product information.
 5. **User Authentication** — registration, login, logout, protected account pages and a user profile page (using Django's built-in authentication).
-6. **Admin Panel** — Django admin manages products, categories, banners and users, including product image uploads and an order list with inline order items.
+6. **Custom Store Dashboard** — a staff-only control panel at `/dashboard/` replaces the default Django admin entirely, with overview stats plus full product, category, banner, order and user (account) management, including image uploads and order status updates.
 7. **Buy Flow** — session-based shopping bag with live quantity/price updating (AJAX), checkout with shipping details, and an order confirmation page with per-user order history on the profile. Buying is customer-only: anonymous visitors are prompted to sign in, and administrator accounts have purchasing disabled.
 8. **JSON API (read-only)** — endpoints exposing active products, categories and banners.
 
@@ -75,18 +75,21 @@ medowa-task/
 ├── medowa_task/                  project configuration (settings, urls, wsgi, asgi)
 ├── medowa_app/
 │   ├── models.py                 Category, Product, Banner, Order, OrderItem
-│   ├── views.py                  page + API views
+│   ├── views.py                  storefront, bag/checkout and API views
+│   ├── dashboard_views.py        custom store dashboard views
 │   ├── urls.py                   URL routes
-│   ├── admin.py                  admin console configuration
-│   ├── forms.py                  registration, login and checkout forms
+│   ├── catalogue.py              seed catalogue data + local image path helpers
+│   ├── forms.py                  registration, login, checkout and dashboard forms
 │   ├── cart.py                   session-based shopping bag
 │   ├── context_processors.py     injects the bag count into every template
 │   ├── credentials.py            demo account definitions
 │   ├── tests.py                  automated test suite
 │   ├── migrations/               database migrations
-│   ├── management/commands/      seed_store, ensure_accounts, verify_accounts
-│   └── templates/                front end (base, index, product detail, cart, checkout, auth, profile)
-└── static/css/app.css            custom CSS
+│   ├── management/commands/      seed_store, make_placeholder_images, ensure_accounts, verify_accounts
+│   └── templates/                front end + dashboard (base, index, product detail, cart, checkout, auth, profile, dashboard/*)
+└── static/
+    ├── css/app.css               custom CSS
+    └── img/                      generated PNG product and banner imagery
 ```
 
 ## Running Locally
@@ -96,12 +99,13 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py make_placeholder_images
 python manage.py seed_store
 python manage.py ensure_accounts
 python manage.py runserver
 ```
 
-Then open http://127.0.0.1:8000/ (admin at `/admin/`, `admin` / `Admin@12345`).
+Then open http://127.0.0.1:8000/ (dashboard at `/dashboard/`, `admin` / `Admin@12345`).
 
 Run the automated test suite:
 

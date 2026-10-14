@@ -39,4 +39,8 @@ urlpatterns = [
     path('dashboard/orders/<int:pk>/', dashboard_views.order_detail, name='dashboard_order_detail'),
     path('dashboard/orders/<int:pk>/status/', dashboard_views.order_update_status, name='dashboard_order_status'),
     path('dashboard/users/', dashboard_views.user_list, name='dashboard_users'),
+    path('dashboard/users/new/', dashboard_views.user_create, name='dashboard_user_create'),
+    path('dashboard/users/<int:pk>/edit/', dashboard_views.user_edit, name='dashboard_user_edit'),
+    path('dashboard/users/<int:pk>/toggle/', dashboard_views.user_toggle, name='dashboard_user_toggle'),
+    path('dashboard/users/<int:pk>/delete/', dashboard_views.user_delete, name='dashboard_user_delete'),
 ]

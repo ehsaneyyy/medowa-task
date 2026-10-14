@@ -235,9 +235,6 @@ class CredentialVerificationTests(TestCase):
     def setUpTestData(cls):
         cls.admin_user, cls.test_user = ensure_accounts()
 
-    def test_admin_route_resolves_to_admin_path(self):
-        self.assertEqual(reverse('admin:index'), '/admin/')
-
     def test_admin_account_has_superuser_privileges(self):
         self.assertEqual(self.admin_user.username, ADMIN_USERNAME)
         self.assertTrue(self.admin_user.is_staff)
@@ -250,10 +247,14 @@ class CredentialVerificationTests(TestCase):
         self.assertFalse(self.test_user.is_superuser)
         self.assertTrue(self.test_user.check_password(TEST_PASSWORD))
 
-    def test_admin_user_can_reach_admin_console(self):
+    def test_admin_user_can_reach_custom_dashboard(self):
         self.client.login(username=ADMIN_USERNAME, password=ADMIN_PASSWORD)
-        response = self.client.get(reverse('admin:index'))
+        response = self.client.get(reverse('dashboard_home'))
         self.assertEqual(response.status_code, 200)
+
+    def test_django_admin_is_not_exposed(self):
+        response = self.client.get('/admin/')
+        self.assertEqual(response.status_code, 404)
 
     def test_test_user_login_renders_profile_dashboard_with_stats(self):
         response = self.client.post(reverse('login'), {
@@ -613,3 +614,54 @@ class DashboardTests(StoreFixturesMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         order.refresh_from_db()
         self.assertEqual(order.status, 'shipped')
+
+    def test_user_create_edit_toggle_delete(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse('dashboard_user_create'), {
+            'username': 'newmanager',
+            'email': 'manager@example.com',
+            'first_name': 'New',
+            'last_name': 'Manager',
+            'password': 'Str0ngPass!23',
+            'is_staff': 'on',
+            'is_active': 'on',
+        })
+        self.assertEqual(response.status_code, 302)
+        account = User.objects.get(username='newmanager')
+        self.assertTrue(account.is_staff)
+        self.assertTrue(account.check_password('Str0ngPass!23'))
+
+        self.client.post(reverse('dashboard_user_edit', args=[account.pk]), {
+            'username': 'newmanager',
+            'email': 'updated@example.com',
+            'first_name': 'New',
+            'last_name': 'Manager',
+            'password': '',
+            'is_active': 'on',
+        })
+        account.refresh_from_db()
+        self.assertEqual(account.email, 'updated@example.com')
+        self.assertTrue(account.check_password('Str0ngPass!23'))
+
+        self.client.post(reverse('dashboard_user_toggle', args=[account.pk]))
+        account.refresh_from_db()
+        self.assertFalse(account.is_active)
+
+        self.client.post(reverse('dashboard_user_delete', args=[account.pk]))
+        self.assertFalse(User.objects.filter(pk=account.pk).exists())
+
+    def test_user_create_requires_password(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse('dashboard_user_create'), {
+            'username': 'nopassword',
+            'email': 'np@example.com',
+            'is_active': 'on',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username='nopassword').exists())
+
+    def test_admin_cannot_delete_self(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse('dashboard_user_delete', args=[self.admin.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(pk=self.admin.pk).exists())

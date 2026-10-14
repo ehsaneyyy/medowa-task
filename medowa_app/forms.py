@@ -112,3 +112,44 @@ class BannerForm(forms.ModelForm):
             'image_file': forms.ClearableFileInput(attrs={'class': INPUT}),
             'is_active': forms.CheckboxInput(attrs={'class': CHECK}),
         }
+
+
+class StaffUserForm(forms.ModelForm):
+    password = forms.CharField(
+        required=False,
+        label='Password',
+        widget=forms.PasswordInput(attrs={'class': INPUT, 'autocomplete': 'new-password', 'placeholder': 'Set a password'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'e.g. applefan'}),
+            'email': forms.EmailInput(attrs={'class': INPUT, 'placeholder': 'name@example.com'}),
+            'first_name': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'First name'}),
+            'last_name': forms.TextInput(attrs={'class': INPUT, 'placeholder': 'Last name'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': CHECK}),
+            'is_active': forms.CheckboxInput(attrs={'class': CHECK}),
+        }
+        labels = {
+            'is_staff': 'Administrator access',
+            'is_active': 'Account active',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk is None:
+            self.fields['password'].required = True
+            self.fields['password'].help_text = 'Choose a password for this new user.'
+        else:
+            self.fields['password'].help_text = 'Leave blank to keep the current password.'
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+        if commit:
+            user.save()
+        return user

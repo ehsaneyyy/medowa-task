@@ -1,0 +1,57 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }} — medowa-task Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <h1 class="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">{{ title }}</h1>
+  <a href="{% url 'dashboard_users' %}" class="dashBtnGhost">Back to users</a>
+</div>
+
+<form method="post" class="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+  {% csrf_token %}
+  <div class="dashPanel p-6">
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label class="dashLabel" for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}{{ form.username.errors }}
+      </div>
+      <div>
+        <label class="dashLabel" for="{{ form.email.id_for_label }}">Email</label>
+        {{ form.email }}{{ form.email.errors }}
+      </div>
+      <div>
+        <label class="dashLabel" for="{{ form.first_name.id_for_label }}">First name</label>
+        {{ form.first_name }}{{ form.first_name.errors }}
+      </div>
+      <div>
+        <label class="dashLabel" for="{{ form.last_name.id_for_label }}">Last name</label>
+        {{ form.last_name }}{{ form.last_name.errors }}
+      </div>
+      <div class="sm:col-span-2">
+        <label class="dashLabel" for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}{{ form.password.errors }}
+        <p class="mt-2 text-[12px] text-subtle">{{ form.password.help_text }}</p>
+      </div>
+    </div>
+  </div>
+
+  <aside class="flex flex-col gap-4">
+    <div class="dashPanel flex flex-col gap-4 p-5">
+      <h2 class="text-[15px] font-semibold text-ink">Permissions</h2>
+      <label class="flex items-start gap-3">
+        {{ form.is_staff }}
+        <span class="text-[13.5px] text-ink">Administrator access<span class="mt-0.5 block text-[12px] text-subtle">Can open the store dashboard and manage the catalogue.</span></span>
+      </label>
+      <label class="flex items-start gap-3">
+        {{ form.is_active }}
+        <span class="text-[13.5px] text-ink">Account active<span class="mt-0.5 block text-[12px] text-subtle">Disabled users cannot sign in.</span></span>
+      </label>
+    </div>
+    <div class="dashPanel flex flex-col gap-3 p-5">
+      <button type="submit" class="dashBtn w-full">{% if mode == 'edit' %}Save changes{% else %}Create user{% endif %}</button>
+      <a href="{% url 'dashboard_users' %}" class="dashBtnGhost w-full">Cancel</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}
