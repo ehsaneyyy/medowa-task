@@ -1,9 +1,9 @@
 ADMIN_USERNAME = 'admin'
-ADMIN_EMAIL = 'admin@corestore.local'
+ADMIN_EMAIL = 'admin@medowa-task.local'
 ADMIN_PASSWORD = 'Admin@12345'
 
 TEST_USERNAME = 'testuser'
-TEST_EMAIL = 'testuser@corestore.local'
+TEST_EMAIL = 'testuser@medowa-task.local'
 TEST_PASSWORD = 'TestPass123!'
 
 
