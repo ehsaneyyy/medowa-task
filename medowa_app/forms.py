@@ -39,3 +39,24 @@ class LoginForm(AuthenticationForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'autocomplete': 'current-password'}),
     )
+
+
+class CheckoutForm(forms.Form):
+    full_name = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={'placeholder': 'Full name', 'autocomplete': 'name'}),
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'placeholder': 'name@example.com', 'autocomplete': 'email'}),
+    )
+    address = forms.CharField(
+        widget=forms.Textarea(attrs={'placeholder': 'Street address', 'rows': 3, 'autocomplete': 'street-address'}),
+    )
+    city = forms.CharField(
+        max_length=120,
+        widget=forms.TextInput(attrs={'placeholder': 'City', 'autocomplete': 'address-level2'}),
+    )
+    postal_code = forms.CharField(
+        max_length=20,
+        widget=forms.TextInput(attrs={'placeholder': 'Postal code', 'autocomplete': 'postal-code'}),
+    )

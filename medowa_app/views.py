@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,8 +11,9 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms import LoginForm, RegisterForm
-from .models import Banner, Category, Product
+from .cart import add_to_cart as cart_add, clear_cart, get_cart_items, get_cart_total, set_quantity
+from .forms import CheckoutForm, LoginForm, RegisterForm
+from .models import Banner, Category, Order, OrderItem, Product
 
 
 def index(request):
@@ -99,11 +101,12 @@ def logout_user(request):
 @never_cache
 def profile_user(request):
     account_age_days = (timezone.now().date() - request.user.date_joined.date()).days
+    orders = request.user.orders.prefetch_related('items').all()
     stats = [
         {'label': 'Member for', 'value': '%d days' % account_age_days},
         {'label': 'Store products', 'value': Product.objects.filter(is_active=True).count()},
         {'label': 'Categories', 'value': Category.objects.count()},
-        {'label': 'Live banners', 'value': Banner.objects.filter(is_active=True).count()},
+        {'label': 'Orders placed', 'value': orders.count()},
     ]
     metadata = [
         {'label': 'Username', 'value': request.user.username},
@@ -119,6 +122,8 @@ def profile_user(request):
         'stats': stats,
         'metadata': metadata,
         'account_age_days': account_age_days,
+        'orders': orders,
+        'order_count': orders.count(),
         'initials': (request.user.username[:2] or 'U').upper(),
         'next': reverse('profile'),
     }
@@ -191,3 +196,99 @@ def api_banners(request):
 def api_product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk, is_active=True)
     return JsonResponse(serialize_product(product))
+
+
+def _safe_redirect(request, fallback):
+    target = request.POST.get('next') or request.GET.get('next')
+    if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
+        return redirect(target)
+    return redirect(fallback)
+
+
+@require_POST
+def add_to_cart(request, pk):
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    try:
+        quantity = int(request.POST.get('quantity', 1))
+    except (TypeError, ValueError):
+        quantity = 1
+    if quantity < 1:
+        quantity = 1
+    cart_add(request, product.pk, quantity)
+    messages.success(request, '%s was added to your bag.' % product.name)
+    return redirect('cart')
+
+
+@require_GET
+def cart_detail(request):
+    context = {
+        'items': get_cart_items(request),
+        'total': get_cart_total(request),
+    }
+    return render(request, 'cart.html', context)
+
+
+@require_POST
+def update_cart_item(request, pk):
+    set_quantity(request, pk, request.POST.get('quantity', 1))
+    return redirect('cart')
+
+
+@require_POST
+def remove_cart_item(request, pk):
+    set_quantity(request, pk, 0)
+    messages.info(request, 'Item removed from your bag.')
+    return redirect('cart')
+
+
+@login_required
+@never_cache
+def checkout(request):
+    items = get_cart_items(request)
+    if not items:
+        messages.info(request, 'Your bag is empty. Add a product before checking out.')
+        return redirect('index')
+    total = get_cart_total(request)
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                order = Order.objects.create(
+                    user=request.user,
+                    full_name=form.cleaned_data['full_name'],
+                    email=form.cleaned_data['email'],
+                    address=form.cleaned_data['address'],
+                    city=form.cleaned_data['city'],
+                    postal_code=form.cleaned_data['postal_code'],
+                    total=total,
+                )
+                OrderItem.objects.bulk_create([
+                    OrderItem(
+                        order=order,
+                        product=item['product'],
+                        price=item['product'].price,
+                        quantity=item['quantity'],
+                    )
+                    for item in items
+                ])
+            clear_cart(request)
+            messages.success(request, 'Order %s placed successfully.' % order.reference)
+            return redirect('order_success', pk=order.pk)
+    else:
+        form = CheckoutForm(initial={
+            'full_name': request.user.get_full_name() or request.user.username,
+            'email': request.user.email,
+        })
+    context = {
+        'form': form,
+        'items': items,
+        'total': total,
+    }
+    return render(request, 'checkout.html', context)
+
+
+@login_required
+@never_cache
+def order_success(request, pk):
+    order = get_object_or_404(Order, pk=pk, user=request.user)
+    return render(request, 'order_success.html', {'order': order})
