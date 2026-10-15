@@ -36,7 +36,7 @@
             <button type="submit" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">{% if banner.is_active %}Hide{% else %}Show{% endif %}</button>
           </form>
           <a href="{% url 'dashboard_banner_edit' banner.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
-          <form method="post" action="{% url 'dashboard_banner_delete' banner.pk %}" onsubmit="return confirm('Delete banner &quot;{{ banner.title|escapejs }}&quot;?');">
+          <form method="post" action="{% url 'dashboard_banner_delete' banner.pk %}" data-confirm="Delete banner &quot;{{ banner.title }}&quot;?" data-confirm-title="Delete banner">
             {% csrf_token %}
             <button type="submit" class="dashBtnDanger">Delete</button>
           </form>

@@ -255,6 +255,26 @@
       </p>
     </div>
   </footer>
+
+  <div id="appConfirm" class="fixed inset-0 z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="appConfirmTitle" aria-describedby="appConfirmMessage">
+    <div id="appConfirmBackdrop" class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+    <div class="riseIn relative w-full max-w-[420px] rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+      <div class="flex items-start gap-3.5">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff5f5] text-[#c7262c]" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M12 8v5m0 3.5h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="min-w-0">
+          <h2 id="appConfirmTitle" class="text-[17px] font-semibold tracking-tight text-ink">Please confirm</h2>
+          <p id="appConfirmMessage" class="mt-1.5 text-[14px] leading-relaxed text-subtle"></p>
+        </div>
+      </div>
+      <div class="mt-6 flex items-center justify-end gap-2.5">
+        <button type="button" id="appConfirmCancel" class="rounded-full border border-hair bg-white px-5 py-2.5 text-[14px] font-medium text-ink transition hover:border-ink/40">Cancel</button>
+        <button type="button" id="appConfirmOk" class="rounded-full bg-[#c7262c] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[#b21f25]">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       if ('scrollRestoration' in history) {
@@ -287,6 +307,64 @@
       window.addEventListener('load', settleScroll);
       window.addEventListener('hashchange', settleScroll);
       window.addEventListener('DOMContentLoaded', settleScroll);
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('appConfirm');
+      if (!modal) return;
+
+      var titleEl = document.getElementById('appConfirmTitle');
+      var messageEl = document.getElementById('appConfirmMessage');
+      var okBtn = document.getElementById('appConfirmOk');
+      var cancelBtn = document.getElementById('appConfirmCancel');
+      var backdrop = document.getElementById('appConfirmBackdrop');
+      var pendingForm = null;
+      var lastFocused = null;
+
+      function open(form) {
+        pendingForm = form;
+        lastFocused = document.activeElement;
+        titleEl.textContent = form.getAttribute('data-confirm-title') || 'Please confirm';
+        messageEl.textContent = form.getAttribute('data-confirm') || 'Are you sure you want to continue?';
+        okBtn.textContent = form.getAttribute('data-confirm-ok') || 'Delete';
+        okBtn.className = 'rounded-full px-5 py-2.5 text-[14px] font-medium text-white transition ' +
+          (form.getAttribute('data-confirm-tone') === 'brand' ? 'bg-brand hover:bg-[#0077ed]' : 'bg-[#c7262c] hover:bg-[#b21f25]');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        okBtn.focus();
+      }
+
+      function close() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+        pendingForm = null;
+        if (lastFocused && lastFocused.focus) lastFocused.focus();
+      }
+
+      document.addEventListener('submit', function (event) {
+        var form = event.target;
+        if (form && form.matches && form.matches('form[data-confirm]')) {
+          event.preventDefault();
+          open(form);
+        }
+      });
+
+      okBtn.addEventListener('click', function () {
+        var form = pendingForm;
+        if (!form) return;
+        form.removeAttribute('data-confirm');
+        form.submit();
+      });
+
+      cancelBtn.addEventListener('click', close);
+      backdrop.addEventListener('click', close);
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+      });
     })();
   </script>
 </body>

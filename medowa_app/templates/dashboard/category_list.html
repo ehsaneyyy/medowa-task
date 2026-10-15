@@ -31,7 +31,7 @@
             <td class="dashTd">
               <div class="flex items-center justify-end gap-2">
                 <a href="{% url 'dashboard_category_edit' category.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
-                <form method="post" action="{% url 'dashboard_category_delete' category.pk %}" onsubmit="return confirm('Delete &quot;{{ category.name|escapejs }}&quot; and all {{ category.product_total }} of its products?');">
+                <form method="post" action="{% url 'dashboard_category_delete' category.pk %}" data-confirm="Delete &quot;{{ category.name }}&quot; and all {{ category.product_total }} of its products?" data-confirm-title="Delete category">
                   {% csrf_token %}
                   <button type="submit" class="dashBtnDanger">Delete</button>
                 </form>

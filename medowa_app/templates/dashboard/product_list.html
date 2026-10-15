@@ -60,7 +60,7 @@
                   <button type="submit" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">{% if product.is_active %}Hide{% else %}Show{% endif %}</button>
                 </form>
                 <a href="{% url 'dashboard_product_edit' product.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
-                <form method="post" action="{% url 'dashboard_product_delete' product.pk %}" onsubmit="return confirm('Delete &quot;{{ product.name|escapejs }}&quot;? This cannot be undone.');">
+                <form method="post" action="{% url 'dashboard_product_delete' product.pk %}" data-confirm="Delete &quot;{{ product.name }}&quot;? This cannot be undone." data-confirm-title="Delete product">
                   {% csrf_token %}
                   <button type="submit" class="dashBtnDanger">Delete</button>
                 </form>

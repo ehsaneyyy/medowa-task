@@ -61,7 +61,7 @@
                   <button type="submit" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40" {% if account == request.user %}disabled title="You cannot change your own status"{% endif %}>{% if account.is_active %}Disable{% else %}Enable{% endif %}</button>
                 </form>
                 <a href="{% url 'dashboard_user_edit' account.pk %}" class="rounded-full border border-hair bg-white px-3 py-1.5 text-[12px] font-medium text-ink transition hover:border-ink/40">Edit</a>
-                <form method="post" action="{% url 'dashboard_user_delete' account.pk %}" onsubmit="return confirm('Delete &quot;{{ account.username|escapejs }}&quot;? This cannot be undone.');">
+                <form method="post" action="{% url 'dashboard_user_delete' account.pk %}" data-confirm="Delete &quot;{{ account.username }}&quot;? This cannot be undone." data-confirm-title="Delete user">
                   {% csrf_token %}
                   <button type="submit" class="dashBtnDanger" {% if account == request.user %}disabled title="You cannot delete yourself"{% endif %}>Delete</button>
                 </form>
