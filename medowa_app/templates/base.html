@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <title>{% block title %}medowa-task{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -150,6 +150,14 @@
       .statTile {
         @apply rounded-2xl border border-black/[0.06] bg-white p-5;
       }
+
+      .navRow {
+        @apply flex items-center rounded-xl px-3.5 py-3 text-[14.5px] font-medium text-ink transition duration-200 hover:bg-page;
+      }
+
+      .navRowOn {
+        @apply bg-page text-ink;
+      }
     }
   </style>
   {% block extra_head %}{% endblock %}
@@ -162,35 +170,66 @@
         <span class="hidden text-[13px] font-semibold tracking-tight text-ink sm:inline">medowa-task</span>
       </a>
 
-      <nav class="scrollbar-none -mx-1 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap px-1" aria-label="Store categories">
+      <nav class="scrollbar-none -mx-1 hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap px-1 md:flex" aria-label="Store categories">
         <a href="{% url 'index' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'index' and not active_category %}navLinkActive{% endif %}">Store</a>
         <a href="{% url 'index' %}?category=mac#lineup" class="navLink shrink-0 {% if active_category == 'mac' %}navLinkActive{% endif %}">Mac</a>
         <a href="{% url 'index' %}?category=iphone#lineup" class="navLink shrink-0 {% if active_category == 'iphone' %}navLinkActive{% endif %}">iPhone</a>
         <a href="{% url 'index' %}?category=ipad#lineup" class="navLink shrink-0 {% if active_category == 'ipad' %}navLinkActive{% endif %}">iPad</a>
         <a href="{% url 'index' %}?category=watch#lineup" class="navLink shrink-0 {% if active_category == 'watch' %}navLinkActive{% endif %}">Watch</a>
-        <a href="{% url 'index' %}?category=mac#lineup" class="navLink shrink-0 {% if active_category == 'mac' %}navLinkActive{% endif %}">MacBook</a>
         {% if user.is_authenticated %}
           <a href="{% url 'profile' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'profile' %}navLinkActive{% endif %}">Profile</a>
         {% endif %}
       </nav>
 
-      <div class="flex shrink-0 items-center gap-1">
+      <div class="ml-auto flex shrink-0 items-center gap-1">
         {% if not user.is_staff %}
           <a href="{% url 'cart' %}" class="navLink shrink-0 {% if request.resolver_match.url_name == 'cart' %}navLinkActive{% endif %}">Bag<span data-cart-count class="{% if not cart_count %}hidden {% endif %}ml-1 rounded-full bg-brand px-1.5 text-[10px] font-semibold text-white">{{ cart_count }}</span></a>
         {% endif %}
         {% if user.is_staff %}
-          <a href="{% url 'dashboard_home' %}" class="navLink shrink-0">Dashboard</a>
+          <a href="{% url 'dashboard_home' %}" class="navLink hidden shrink-0 sm:inline-flex">Dashboard</a>
         {% endif %}
         {% if user.is_authenticated %}
-          <form method="post" action="{% url 'logout' %}">
+          <form method="post" action="{% url 'logout' %}" class="hidden md:block">
             {% csrf_token %}
             <button type="submit" class="navLink">Logout</button>
           </form>
         {% else %}
-          <a href="{% url 'login' %}" class="navLink {% if request.resolver_match.url_name == 'login' %}navLinkActive{% endif %}">Login</a>
-          <a href="{% url 'register' %}" class="hidden shrink-0 rounded-full bg-ink px-3 py-1.5 text-[12px] text-white transition hover:bg-black sm:inline-flex {% if request.resolver_match.url_name == 'register' %}ring-1 ring-ink{% endif %}">Register</a>
+          <a href="{% url 'login' %}" class="navLink hidden md:inline-flex {% if request.resolver_match.url_name == 'login' %}navLinkActive{% endif %}">Login</a>
+          <a href="{% url 'register' %}" class="hidden shrink-0 rounded-full bg-ink px-3 py-1.5 text-[12px] text-white transition hover:bg-black md:inline-flex {% if request.resolver_match.url_name == 'register' %}ring-1 ring-ink{% endif %}">Register</a>
         {% endif %}
+
+        <button type="button" id="navToggle" class="ml-0.5 flex h-9 w-9 items-center justify-center rounded-full text-ink transition duration-200 hover:bg-page md:hidden" aria-label="Open menu" aria-controls="navMenu" aria-expanded="false">
+          <svg id="navIconOpen" viewBox="0 0 24 24" fill="none" class="h-[18px] w-[18px]" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg id="navIconClose" viewBox="0 0 24 24" fill="none" class="hidden h-5 w-5" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
       </div>
+    </div>
+
+    <div id="navMenu" class="hidden border-t border-black/[0.06] bg-white md:hidden">
+      <nav class="mx-auto flex w-full max-w-[1024px] flex-col gap-0.5 px-3 py-3" aria-label="Mobile menu">
+        <a href="{% url 'index' %}" class="navRow {% if request.resolver_match.url_name == 'index' and not active_category %}navRowOn{% endif %}">Store</a>
+        <a href="{% url 'index' %}?category=mac#lineup" class="navRow {% if active_category == 'mac' %}navRowOn{% endif %}">Mac</a>
+        <a href="{% url 'index' %}?category=iphone#lineup" class="navRow {% if active_category == 'iphone' %}navRowOn{% endif %}">iPhone</a>
+        <a href="{% url 'index' %}?category=ipad#lineup" class="navRow {% if active_category == 'ipad' %}navRowOn{% endif %}">iPad</a>
+        <a href="{% url 'index' %}?category=watch#lineup" class="navRow {% if active_category == 'watch' %}navRowOn{% endif %}">Watch</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="navRow {% if request.resolver_match.url_name == 'profile' %}navRowOn{% endif %}">Profile</a>
+        {% endif %}
+        {% if user.is_staff %}
+          <a href="{% url 'dashboard_home' %}" class="navRow">Dashboard</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'logout' %}" class="pt-1">
+            {% csrf_token %}
+            <button type="submit" class="navRow w-full text-[#c7262c] hover:bg-[#fff5f5]">Logout</button>
+          </form>
+        {% else %}
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <a href="{% url 'login' %}" class="btnNeutral">Login</a>
+            <a href="{% url 'register' %}" class="btnPrimary">Register</a>
+          </div>
+        {% endif %}
+      </nav>
     </div>
   </header>
 
@@ -364,6 +403,47 @@
       backdrop.addEventListener('click', close);
       document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var toggle = document.getElementById('navToggle');
+      var menu = document.getElementById('navMenu');
+      if (!toggle || !menu) return;
+
+      var iconOpen = document.getElementById('navIconOpen');
+      var iconClose = document.getElementById('navIconClose');
+
+      function setMenu(show) {
+        menu.classList.toggle('hidden', !show);
+        toggle.setAttribute('aria-expanded', show ? 'true' : 'false');
+        toggle.setAttribute('aria-label', show ? 'Close menu' : 'Open menu');
+        if (iconOpen) iconOpen.classList.toggle('hidden', show);
+        if (iconClose) iconClose.classList.toggle('hidden', !show);
+      }
+
+      toggle.addEventListener('click', function () {
+        setMenu(menu.classList.contains('hidden'));
+      });
+
+      menu.addEventListener('click', function (event) {
+        if (event.target.closest('a')) setMenu(false);
+      });
+
+      document.addEventListener('click', function (event) {
+        if (menu.classList.contains('hidden')) return;
+        if (event.target.closest('#navMenu') || event.target.closest('#navToggle')) return;
+        setMenu(false);
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') setMenu(false);
+      });
+
+      window.addEventListener('resize', function () {
+        if (window.innerWidth >= 768) setMenu(false);
       });
     })();
   </script>

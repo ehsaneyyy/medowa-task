@@ -67,7 +67,7 @@
 
   <div class="mx-auto grid w-full max-w-[1200px] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[228px_1fr]">
     <aside class="lg:sticky lg:top-[84px] lg:self-start">
-      <nav class="scrollbar-none -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
+      <nav class="flex flex-wrap gap-1.5 lg:flex-col">
         <a href="{% url 'dashboard_home' %}" class="dashLink {% if dash_section == 'home' %}dashLinkOn{% endif %}">Overview</a>
         <a href="{% url 'dashboard_products' %}" class="dashLink {% if dash_section == 'products' %}dashLinkOn{% endif %}">Products</a>
         <a href="{% url 'dashboard_categories' %}" class="dashLink {% if dash_section == 'categories' %}dashLinkOn{% endif %}">Categories</a>
