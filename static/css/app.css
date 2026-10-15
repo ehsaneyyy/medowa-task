@@ -38,6 +38,22 @@ html {
   animation: mediaIn 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
+.heroViewport {
+  min-height: calc(100vh - 3rem);
+}
+
+@supports (height: 1svh) {
+  .heroViewport {
+    min-height: calc(100svh - 3rem);
+  }
+}
+
+@media (max-height: 640px) {
+  .heroViewport {
+    min-height: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
